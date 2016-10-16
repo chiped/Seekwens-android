@@ -5,4 +5,7 @@
     <color name="colorAccent">#6889FF</color>
 
     <color name="white">#FFFFFF</color>
+
+    <color name="colorButtonDisabled">#7986cb</color>
+
 </resources>
