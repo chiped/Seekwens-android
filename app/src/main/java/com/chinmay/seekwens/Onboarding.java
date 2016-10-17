@@ -1,20 +1,25 @@
 package com.chinmay.seekwens;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.chinmay.seekwens.database.FireBaseUtils;
 import com.jakewharton.rxbinding.widget.RxTextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Observable;
+import rx.Subscriber;
 import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Func2;
+
+import static com.chinmay.seekwens.SeeKwensApplication.PREFS;
+import static com.chinmay.seekwens.SeeKwensApplication.USER_ID_KEY;
 
 public class Onboarding extends AppCompatActivity {
 
@@ -25,6 +30,7 @@ public class Onboarding extends AppCompatActivity {
     @BindView(R.id.game_id) EditText gameIdField;
     private Subscription createGameSubscription;
     private Subscription joinGameSubscription;
+    private Subscription gameJoinFirebaseSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,16 +75,44 @@ public class Onboarding extends AppCompatActivity {
         if (joinGameSubscription != null) {
             joinGameSubscription.unsubscribe();
         }
+
+        if (gameJoinFirebaseSubscription != null) {
+            gameJoinFirebaseSubscription.unsubscribe();
+        }
         super.onPause();
     }
 
     @OnClick(R.id.button_new_game)
     public void onClickCreateGame() {
-        Toast.makeText(this, "Creating new game with name " + displayNameNew.getText(), Toast.LENGTH_LONG).show();
+        final String playerId = getApplicationContext().getSharedPreferences(PREFS, MODE_PRIVATE).getString(USER_ID_KEY, null);
+        final String playerName = displayNameNew.getText().toString();
+        final String gameId = FireBaseUtils.createNewGame(playerId, playerName);
+        Toast.makeText(this, "Created game with id " + gameId, Toast.LENGTH_LONG).show();
+
     }
 
     @OnClick(R.id.button_join_game)
     public void onClickJoinGame() {
-        Toast.makeText(this, "Joining game " + gameIdField.getText()  + " with name " + displayNameJoin.getText(), Toast.LENGTH_LONG).show();
+        final String playerId = getApplicationContext().getSharedPreferences(PREFS, MODE_PRIVATE).getString(USER_ID_KEY, null);
+        final String playerName = displayNameJoin.getText().toString();
+        final String gameId = gameIdField.getText().toString();
+
+        gameJoinFirebaseSubscription = FireBaseUtils.joinGame(gameId, playerId, playerName)
+                .subscribe(new Subscriber<String>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(Onboarding.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                        Toast.makeText(Onboarding.this, "Joining game " + gameId  + " with name " + playerName, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }
