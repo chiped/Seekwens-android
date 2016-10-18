@@ -13,6 +13,8 @@
     <string name="red">Red</string>
     <string name="blue">Blue</string>
     <string name="green">Green</string>
+    <string name="game_joining">Joining game %1$s with name %2$s</string>
+    <string name="game_created">Created game with id %1$s</string>
 
     <string-array name="team_names">
         <item>@string/red</item>

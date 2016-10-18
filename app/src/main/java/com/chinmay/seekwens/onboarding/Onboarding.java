@@ -96,7 +96,7 @@ public class Onboarding extends AppCompatActivity {
         final String playerId = getApplicationContext().getSharedPreferences(PREFS, MODE_PRIVATE).getString(USER_ID_KEY, null);
         final String playerName = displayNameNew.getText().toString();
         final String gameId = FireBaseUtils.createNewGame(playerId, playerName);
-        Toast.makeText(this, "Created game with id " + gameId, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.game_created, gameId), Toast.LENGTH_LONG).show();
         moveToGameDetail(gameId);
 
     }
@@ -121,7 +121,7 @@ public class Onboarding extends AppCompatActivity {
 
                     @Override
                     public void onNext(String s) {
-                        Toast.makeText(Onboarding.this, "Joining game " + gameId  + " with name " + playerName, Toast.LENGTH_LONG).show();
+                        Toast.makeText(Onboarding.this, getString(R.string.game_joining, gameId, playerName), Toast.LENGTH_LONG).show();
                         moveToGameDetail(gameId);
                     }
                 });
