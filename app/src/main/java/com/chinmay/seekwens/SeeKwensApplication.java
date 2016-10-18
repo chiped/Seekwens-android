@@ -14,6 +14,8 @@ public class SeeKwensApplication extends Application {
     public void onCreate() {
         super.onCreate();
         final SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS, MODE_PRIVATE);
-        prefs.edit().putString(USER_ID_KEY, UUID.randomUUID().toString()).apply();
+        if (prefs.getString(USER_ID_KEY, null) == null) {
+            prefs.edit().putString(USER_ID_KEY, UUID.randomUUID().toString()).apply();
+        }
     }
 }

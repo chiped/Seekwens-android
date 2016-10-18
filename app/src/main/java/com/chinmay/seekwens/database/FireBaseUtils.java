@@ -2,7 +2,6 @@ package com.chinmay.seekwens.database;
 
 import com.chinmay.seekwens.model.Game;
 import com.chinmay.seekwens.model.Player;
-import com.chinmay.seekwens.model.Team;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -10,24 +9,28 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
 import rx.Observable;
 import rx.Subscriber;
 
 public class FireBaseUtils {
 
+    public static final String PLAYERS_KEY = "players";
+    public static final String TEAM_KEY = "team";
+
     public static String createNewGame(String playerId, String playerName) {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
 
-        final Game game = new Game();
-        final DatabaseReference dbReference = database.getReference(game.getId());
+        final Game game = Game.with(playerId);
+        final DatabaseReference gameRef = database.getReference(game.getId());
+        gameRef.setValue(game);
 
+        final DatabaseReference players = gameRef.child(PLAYERS_KEY);
         final Player player = Player.with(playerId, playerName);
-
-        final Team team = new Team();
-        team.playerList.add(player);
-        game.teamList.add(team);
-        dbReference.setValue(game);
+        final Map<String, Object> map = Collections.singletonMap(playerId, (Object) player);
+        players.updateChildren(map);
 
         return game.getId();
     }
@@ -36,7 +39,17 @@ public class FireBaseUtils {
         return Observable.create(new FirebaseGameJoinerSubscriber(gameId, playerId, playerName));
     }
 
-    final static class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<String> {
+    public static DatabaseReference getPlayerRef(String gameId) {
+        return FirebaseDatabase.getInstance().getReference(gameId).child(PLAYERS_KEY);
+    }
+
+    public static void selectTeamForPlayer(String gameId, String playerId, int team) {
+        final DatabaseReference child = FirebaseDatabase.getInstance().getReference(gameId).child(PLAYERS_KEY).child(playerId);
+        final Map<String, Object> teamMap = Collections.singletonMap(TEAM_KEY, (Object) new Integer(team));
+        child.updateChildren(teamMap);
+    }
+
+    private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<String> {
 
         private final String playerName;
         private final String playerId;
@@ -64,21 +77,21 @@ public class FireBaseUtils {
 
                         @Override
                         public void onNext(Game validGame) {
+                            if (subscriber.isUnsubscribed()) {
+                                return;
+                            }
                             final FirebaseDatabase database = FirebaseDatabase.getInstance();
-                            final DatabaseReference dbReference = database.getReference(gameId);
+                            final DatabaseReference players = database.getReference(gameId).child(PLAYERS_KEY);
                             final Player player = Player.with(playerId, playerName);
-                            final Team team = new Team();
-                            team.playerList.add(player);
-                            validGame.teamList.add(team);
-
-                            dbReference.setValue(validGame);
+                            final Map<String, Object> map = Collections.singletonMap(playerId, (Object) player);
+                            players.updateChildren(map);
                             subscriber.onNext(null);
                         }
                     });
         }
     }
 
-    final static class FirebaseGameCheckerSubscriber implements Observable.OnSubscribe<Game> {
+    private static final class FirebaseGameCheckerSubscriber implements Observable.OnSubscribe<Game> {
 
         public static final String NOT_FOUND_ERROR_STRING = "Game id %s doesn't exist";
         public static final String GAME_RUNNING_ERROR_STRING = "Game %s has already started.";

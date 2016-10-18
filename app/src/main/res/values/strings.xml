@@ -1,8 +1,22 @@
 <resources>
     <string name="app_name">SeeKwens</string>
+
     <string name="join_game">Join game</string>
     <string name="new_game">Create game</string>
     <string name="game_id_hint">Exisiting game id</string>
     <string name="name_hint">Your display name</string>
     <string name="or_divider">- OR -</string>
+
+    <string name="start_game">Start game</string>
+    <string name="game_id">Game id:</string>
+
+    <string name="red">Red</string>
+    <string name="blue">Blue</string>
+    <string name="green">Green</string>
+
+    <string-array name="team_names">
+        <item>@string/red</item>
+        <item>@string/green</item>
+        <item>@string/blue</item>
+    </string-array>
 </resources>

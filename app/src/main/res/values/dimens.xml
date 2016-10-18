@@ -6,4 +6,5 @@
     <dimen name="defaultButtonTextSize">16sp</dimen>
 
     <dimen name="paddingMedium">12dp</dimen>
+    <dimen name="team_indicator_width_height">32dp</dimen>
 </resources>

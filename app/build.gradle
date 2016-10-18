@@ -26,12 +26,18 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
     compile 'com.jakewharton:butterknife:8.4.0'
     compile 'io.reactivex:rxandroid:1.2.1'
     compile 'io.reactivex:rxjava:1.2.1'
     compile 'com.jakewharton.rxbinding:rxbinding:0.4.0'
     compile 'com.google.firebase:firebase-core:9.6.1'
     compile 'com.google.firebase:firebase-database:9.6.1'
+    compile 'com.firebaseui:firebase-ui-database:0.6.1'
+    compile 'com.f2prateek.dart:dart:2.0.1'
+    provided 'com.f2prateek.dart:dart-processor:2.0.1'
+    compile 'com.f2prateek.dart:henson:2.0.1'
+    provided 'com.f2prateek.dart:henson-processor:2.0.1'
 
     testCompile 'junit:junit:4.12'
 

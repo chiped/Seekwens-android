@@ -7,5 +7,13 @@
     <color name="white">#FFFFFF</color>
 
     <color name="colorButtonDisabled">#7986cb</color>
+    <color name="red">#FF0000</color>
+    <color name="grey3C">#3C3C3C</color>
+
+    <array name="team_colors">
+        <item>#F44336</item>
+        <item>#4CAF50</item>
+        <item>#2196F3</item>
+    </array>
 
 </resources>

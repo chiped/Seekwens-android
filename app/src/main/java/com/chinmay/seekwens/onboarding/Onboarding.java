@@ -1,12 +1,15 @@
-package com.chinmay.seekwens;
+package com.chinmay.seekwens.onboarding;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.database.FireBaseUtils;
+import com.chinmay.seekwens.gamedetail.Henson;
 import com.jakewharton.rxbinding.widget.RxTextView;
 
 import butterknife.BindView;
@@ -82,12 +85,19 @@ public class Onboarding extends AppCompatActivity {
         super.onPause();
     }
 
+    private void moveToGameDetail(String gameId) {
+        final Intent gameDetailIntent = Henson.with(Onboarding.this).gotoGameDetail().gameId(gameId).build();
+        Onboarding.this.startActivity(gameDetailIntent);
+        finish();
+    }
+
     @OnClick(R.id.button_new_game)
     public void onClickCreateGame() {
         final String playerId = getApplicationContext().getSharedPreferences(PREFS, MODE_PRIVATE).getString(USER_ID_KEY, null);
         final String playerName = displayNameNew.getText().toString();
         final String gameId = FireBaseUtils.createNewGame(playerId, playerName);
         Toast.makeText(this, "Created game with id " + gameId, Toast.LENGTH_LONG).show();
+        moveToGameDetail(gameId);
 
     }
 
@@ -112,6 +122,7 @@ public class Onboarding extends AppCompatActivity {
                     @Override
                     public void onNext(String s) {
                         Toast.makeText(Onboarding.this, "Joining game " + gameId  + " with name " + playerName, Toast.LENGTH_LONG).show();
+                        moveToGameDetail(gameId);
                     }
                 });
     }
