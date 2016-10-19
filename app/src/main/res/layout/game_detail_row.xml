@@ -10,12 +10,21 @@
     <View
         android:id="@+id/playerTeam"
         android:layout_height="@dimen/team_indicator_width_height"
-        android:layout_width="@dimen/team_indicator_width_height"/>
+        android:layout_width="@dimen/team_indicator_width_height"
+        android:layout_weight="0"/>
 
     <TextView
         android:id="@+id/playerName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingStart="@dimen/paddingMedium"
-        tools:text="Dummy player name"/>
+        tools:text="Dummy player name"
+        android:layout_weight="1"/>
+    
+    <ImageView
+        android:id="@+id/playerDragHandle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:src="@drawable/ic_menu_grey_700_36dp"/>
 </LinearLayout>

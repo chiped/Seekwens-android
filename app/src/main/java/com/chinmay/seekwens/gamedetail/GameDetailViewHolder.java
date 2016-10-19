@@ -1,10 +1,13 @@
 package com.chinmay.seekwens.gamedetail;
 
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.chinmay.seekwens.R;
@@ -18,20 +21,37 @@ public class GameDetailViewHolder extends RecyclerView.ViewHolder implements Pop
 
     @BindView(R.id.playerName) TextView textView;
     @BindView(R.id.playerTeam) View playerTeam;
+    @BindView(R.id.playerDragHandle) ImageView playerDragHandle;
+
     @BindArray(R.array.team_colors) int[] teamColors;
     @BindArray(R.array.team_names) String[] teamNames;
 
-    private TeamSelectInternalListener listener;
+    private final boolean isOwner;
+    private TeamSelectInternalListener teamSelectListener;
+    private DragStartInternalListener dragStartListener;
 
-    public GameDetailViewHolder(View view) {
+    public GameDetailViewHolder(View view, boolean isOwner) {
         super(view);
         ButterKnife.bind(this, view);
-        playerTeam.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showPopup(view);
-            }
-        });
+        this.isOwner = isOwner;
+        if (isOwner) {
+            playerTeam.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showPopup(view);
+                }
+            });
+            playerDragHandle.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (MotionEventCompat.getActionMasked(event) ==
+                            MotionEvent.ACTION_DOWN) {
+                        dragStartListener.onStartDrag(GameDetailViewHolder.this);
+                    }
+                    return false;
+                }
+            });
+        }
     }
 
     private void showPopup(View view) {
@@ -45,12 +65,13 @@ public class GameDetailViewHolder extends RecyclerView.ViewHolder implements Pop
     public void bind(Player model) {
         textView.setText(model.getName());
         playerTeam.setBackgroundColor(teamColors[model.team]);
+        playerDragHandle.setVisibility(isOwner ? View.VISIBLE : View.GONE);
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         final int team = getTeamNumberFromName(item.getTitle().toString());
-        listener.onTeamSelected(team);
+        teamSelectListener.onTeamSelected(team);
         return true;
     }
 
@@ -63,12 +84,20 @@ public class GameDetailViewHolder extends RecyclerView.ViewHolder implements Pop
         return -1;
     }
 
-    public void setListener(TeamSelectInternalListener listener) {
-        this.listener = listener;
+    public void setTeamSelectListener(TeamSelectInternalListener listener) {
+        this.teamSelectListener = listener;
+    }
+
+    public void setDragStartListener(DragStartInternalListener dragStartListener) {
+        this.dragStartListener = dragStartListener;
     }
 
     interface TeamSelectInternalListener {
         void onTeamSelected(int team);
+    }
+
+    interface DragStartInternalListener {
+        void onStartDrag(RecyclerView.ViewHolder viewHolder);
     }
 
 }

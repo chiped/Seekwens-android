@@ -7,6 +7,7 @@ public class Player {
     public String id;
     public String name;
     public int team;
+    public int order;
     public List<Card> hand = new ArrayList<>();
 
     public String getId() {

@@ -85,8 +85,11 @@ public class Onboarding extends AppCompatActivity {
         super.onPause();
     }
 
-    private void moveToGameDetail(String gameId) {
-        final Intent gameDetailIntent = Henson.with(Onboarding.this).gotoGameDetail().gameId(gameId).build();
+    private void moveToGameDetail(String gameId, boolean isOwner) {
+        final Intent gameDetailIntent = Henson.with(Onboarding.this).gotoGameDetail()
+                .gameId(gameId)
+                .isOwner(isOwner)
+                .build();
         Onboarding.this.startActivity(gameDetailIntent);
         finish();
     }
@@ -97,7 +100,7 @@ public class Onboarding extends AppCompatActivity {
         final String playerName = displayNameNew.getText().toString();
         final String gameId = FireBaseUtils.createNewGame(playerId, playerName);
         Toast.makeText(this, getString(R.string.game_created, gameId), Toast.LENGTH_LONG).show();
-        moveToGameDetail(gameId);
+        moveToGameDetail(gameId, true);
 
     }
 
@@ -108,7 +111,7 @@ public class Onboarding extends AppCompatActivity {
         final String gameId = gameIdField.getText().toString();
 
         gameJoinFirebaseSubscription = FireBaseUtils.joinGame(gameId, playerId, playerName)
-                .subscribe(new Subscriber<String>() {
+                .subscribe(new Subscriber<Boolean>() {
                     @Override
                     public void onCompleted() {
 
@@ -120,9 +123,9 @@ public class Onboarding extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(String s) {
+                    public void onNext(Boolean isOwner) {
                         Toast.makeText(Onboarding.this, getString(R.string.game_joining, gameId, playerName), Toast.LENGTH_LONG).show();
-                        moveToGameDetail(gameId);
+                        moveToGameDetail(gameId, isOwner);
                     }
                 });
     }
