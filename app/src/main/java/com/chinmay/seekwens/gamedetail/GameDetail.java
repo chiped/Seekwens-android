@@ -17,6 +17,8 @@ import com.google.firebase.database.Query;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 
 public class GameDetail extends AppCompatActivity {
 
@@ -38,6 +40,18 @@ public class GameDetail extends AppCompatActivity {
         setUpRecyclerView();
         gameIdTextView.setText(gameId);
         startGame.setVisibility(isOwner ? View.VISIBLE : View.GONE);
+        setUpGameValidator();
+    }
+
+    private void setUpGameValidator() {
+        FireBaseUtils.getGameValidObservable(gameId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Boolean>() {
+                    @Override
+                    public void call(Boolean valid) {
+                        startGame.setEnabled(valid);
+                    }
+                });
     }
 
     private void setUpRecyclerView() {

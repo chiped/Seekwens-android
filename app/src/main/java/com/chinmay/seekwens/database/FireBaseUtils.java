@@ -1,7 +1,10 @@
 package com.chinmay.seekwens.database;
 
+import android.util.Log;
+
 import com.chinmay.seekwens.model.Game;
 import com.chinmay.seekwens.model.Player;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -12,16 +15,27 @@ import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.functions.Action1;
+import rx.functions.Func2;
+import rx.observables.SyncOnSubscribe;
+import rx.schedulers.Schedulers;
 
 public class FireBaseUtils {
 
     public static final String PLAYERS_KEY = "players";
     public static final String TEAM_KEY = "team";
+    public static final String TEAM_VALIDATION_REGEX = "^(\\d+?)\\1*$";
 
     public static String createNewGame(String playerId, String playerName) {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -80,6 +94,14 @@ public class FireBaseUtils {
 
             }
         });
+    }
+
+    public static Observable<Boolean> getGameValidObservable(String gameId) {
+        return Observable.create(new FirebaseGameValidatorSubscriber(gameId));
+    }
+
+    private static Observable<Game> getGameReaderObservable(String gameId) {
+        return Observable.create(new FirebaseGameReader(gameId));
     }
 
     private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Boolean> {
@@ -179,6 +201,119 @@ public class FireBaseUtils {
                     subscriber.onError(new IOException(databaseError.getMessage()));
                 }
             });
+        }
+    }
+
+    private static final class FirebaseGameValidatorSubscriber implements Observable.OnSubscribe<Boolean> {
+        private final String gameId;
+
+        public FirebaseGameValidatorSubscriber(String gameId) {
+            this.gameId = gameId;
+        }
+
+        @Override
+        public void call(final Subscriber<? super Boolean> subscriber) {
+            FirebaseDatabase.getInstance().getReference(gameId).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    validateGame();
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    validateGame();
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                    validateGame();
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                    validateGame();
+                }
+
+                private void validateGame() {
+                    getGameReaderObservable(gameId)
+                            .observeOn(Schedulers.io())
+                            .subscribe(new Action1<Game>() {
+                                @Override
+                                public void call(Game game) {
+                                    if (subscriber.isUnsubscribed()) {
+                                        return;
+                                    }
+                                    final ArrayList<Player> players = new ArrayList<>(game.players.values());
+                                    if (players.size() > 12 || (players.size() % 2 != 0 && players.size() % 3 != 0)) {
+                                        subscriber.onNext(false);
+                                    }
+                                    Collections.sort(players, new Comparator<Player>() {
+                                        @Override
+                                        public int compare(Player o1, Player o2) {
+                                            return o1.order - o2.order;
+                                        }
+                                    });
+                                    final StringBuffer stringBuffer = new StringBuffer();
+                                    for (Player player : players) {
+                                        stringBuffer.append(player.team);
+                                    }
+                                    Log.v("Player teams: ", stringBuffer.toString());
+                                    final Pattern pattern = Pattern.compile(TEAM_VALIDATION_REGEX);
+                                    final Matcher matcher = pattern.matcher(stringBuffer);
+                                    if (!matcher.find()) {
+                                        subscriber.onNext(false);
+                                    }
+                                    final String group = matcher.group(1);
+                                    final HashSet<Character> characters = new HashSet<>();
+                                    for (char c : group.toCharArray()){
+                                        characters.add(c);
+                                    }
+                                    Log.v("matcher group: ", group);
+                                    Log.v("character set: ", characters.toString());
+                                    boolean isValid = (group.length() == 2 && characters.size() == 2)
+                                                        || (group.length() == 3 && characters.size() == 3);
+                                    subscriber.onNext(isValid);
+                                }
+                            });
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    if (subscriber.isUnsubscribed()) {
+                        return;
+                    }
+                    subscriber.onError(new IOException(databaseError.getMessage()));
+                }
+            });
+        }
+    }
+
+    private static final class FirebaseGameReader implements Observable.OnSubscribe<Game> {
+        private final String gameId;
+
+        public FirebaseGameReader(String gameId) {
+            this.gameId = gameId;
+        }
+
+        @Override
+        public void call(final Subscriber<? super Game> subscriber) {
+            FirebaseDatabase.getInstance().getReference(gameId)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (subscriber.isUnsubscribed()) {
+                                return;
+                            }
+                            final Game game = dataSnapshot.getValue(Game.class);
+                            subscriber.onNext(game);
+                            subscriber.onCompleted();
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            subscriber.onError(new IOException(databaseError.getMessage()));
+                        }
+                    });
         }
     }
 }
