@@ -8,3 +8,4 @@
 .externalNativeBuild
 /gradle.properties
 /app/google-services.json
+/app/gradle.properties

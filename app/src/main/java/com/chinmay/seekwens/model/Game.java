@@ -1,8 +1,11 @@
 package com.chinmay.seekwens.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Map;
 import java.util.UUID;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Game {
 
     public String id;

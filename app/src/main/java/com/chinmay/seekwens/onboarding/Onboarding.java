@@ -2,18 +2,17 @@ package com.chinmay.seekwens.onboarding;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.database.FireBaseUtils;
-import com.chinmay.seekwens.gamedetail.Henson;
+import com.chinmay.seekwens.ui.BaseSeeKwensActivity;
+import com.chinmay.seekwens.ui.Henson;
 import com.jakewharton.rxbinding.widget.RxTextView;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Observable;
 import rx.Subscriber;
@@ -24,7 +23,7 @@ import rx.functions.Func2;
 import static com.chinmay.seekwens.SeeKwensApplication.PREFS;
 import static com.chinmay.seekwens.SeeKwensApplication.USER_ID_KEY;
 
-public class Onboarding extends AppCompatActivity {
+public class Onboarding extends BaseSeeKwensActivity {
 
     @BindView(R.id.button_join_game) Button joinGame;
     @BindView(R.id.button_new_game) Button createGame;
@@ -38,8 +37,11 @@ public class Onboarding extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_onboarding);
-        ButterKnife.bind(this);
+    }
+
+    @Override
+    protected int getlayoutId() {
+        return R.layout.activity_onboarding;
     }
 
     @Override

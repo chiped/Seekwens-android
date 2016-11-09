@@ -1,6 +1,6 @@
 package com.chinmay.seekwens.gamedetail;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,17 +10,28 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.chinmay.seekwens.R;
+import com.chinmay.seekwens.cards.models.DeckResponse;
 import com.chinmay.seekwens.database.FireBaseUtils;
-import com.f2prateek.dart.Dart;
+import com.chinmay.seekwens.model.Game;
+import com.chinmay.seekwens.ui.BaseSeeKwensActivity;
+import com.chinmay.seekwens.ui.Henson;
+import com.chinmay.seekwens.util.GameUtil;
 import com.f2prateek.dart.InjectExtra;
 import com.google.firebase.database.Query;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
+import javax.inject.Inject;
 
-public class GameDetail extends AppCompatActivity {
+import butterknife.BindView;
+import rx.Observable;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.functions.Func2;
+import rx.schedulers.Schedulers;
+
+public class GameDetail extends BaseSeeKwensActivity {
 
     @InjectExtra String gameId;
     @InjectExtra boolean isOwner;
@@ -28,14 +39,15 @@ public class GameDetail extends AppCompatActivity {
     @BindView(R.id.gameIdValue) TextView gameIdTextView;
     @BindView(R.id.game_detail_recyclerview) RecyclerView gameDetailRecyclerView;
     @BindView(R.id.start_game) Button startGame;
+
+    @Inject GameUtil gameUtil;
+
     private GameDetailAdapter gameDetailAdapter;
+    private Subscription gameValidatorSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_game_detail);
-        ButterKnife.bind(this);
-        Dart.inject(this);
 
         setUpRecyclerView();
         gameIdTextView.setText(gameId);
@@ -43,8 +55,13 @@ public class GameDetail extends AppCompatActivity {
         setUpGameValidator();
     }
 
+    @Override
+    protected int getlayoutId() {
+        return R.layout.activity_game_detail;
+    }
+
     private void setUpGameValidator() {
-        FireBaseUtils.getGameValidObservable(gameId)
+        gameValidatorSubscription = FireBaseUtils.getGameValidObservable(gameId)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<Boolean>() {
                     @Override
@@ -52,6 +69,12 @@ public class GameDetail extends AppCompatActivity {
                         startGame.setEnabled(valid);
                     }
                 });
+    }
+
+    @Override
+    protected void onPause() {
+        gameValidatorSubscription.unsubscribe();
+        super.onPause();
     }
 
     private void setUpRecyclerView() {
@@ -81,6 +104,58 @@ public class GameDetail extends AppCompatActivity {
                     itemTouchHelper.startDrag(viewHolder);
                 }
             });
+            startGame.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    gameValidatorSubscription.unsubscribe();
+                    gameUtil.gameReadObservable(gameId)
+                            .subscribeOn(Schedulers.io())
+                            .filter(new Func1<Game, Boolean>() {
+                                @Override
+                                public Boolean call(Game game) {
+                                    return !game.started;
+                                }
+                            })
+                            .flatMap(new Func1<Game, Observable<DeckResponse>>() {
+                                @Override
+                                public Observable<DeckResponse> call(Game game) {
+                                    return gameUtil.getNewDeckObservable();
+                                }
+                            })
+                            .flatMap(new Func1<DeckResponse, Observable<Boolean>>() {
+                                @Override
+                                public Observable<Boolean> call(DeckResponse deckResponse) {
+                                    return gameUtil.distributeCards(gameId, deckResponse.deckId);
+                                }
+                            })
+                            .reduce(new Func2<Boolean, Boolean, Boolean>() {
+                                @Override
+                                public Boolean call(Boolean bool1, Boolean bool2) {
+                                    return bool1 && bool2;
+                                }
+                            })
+                            .doOnNext(new Action1<Boolean>() {
+                                @Override
+                                public void call(Boolean aBoolean) {
+                                    gameUtil.startGame(gameId);
+                                }
+                            })
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .doAfterTerminate(new GameAction())
+                            .subscribe();
+                }
+            });
+        }
+    }
+
+    private class GameAction implements Action0 {
+        @Override
+        public void call() {
+                final Intent intent = Henson.with(GameDetail.this)
+                        .gotoGame()
+                        .gameId(gameId)
+                        .build();
+                startActivity(intent);
         }
     }
 }

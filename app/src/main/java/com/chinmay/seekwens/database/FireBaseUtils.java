@@ -2,6 +2,7 @@ package com.chinmay.seekwens.database;
 
 import android.util.Log;
 
+import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
 import com.chinmay.seekwens.model.Player;
 import com.google.firebase.database.ChildEventListener;
@@ -16,7 +17,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -24,17 +24,20 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.inject.Singleton;
+
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action1;
-import rx.functions.Func2;
-import rx.observables.SyncOnSubscribe;
 import rx.schedulers.Schedulers;
 
+@Singleton
 public class FireBaseUtils {
 
     public static final String PLAYERS_KEY = "players";
     public static final String TEAM_KEY = "team";
+    public static final String HAND_KEY = "hand";
+    public static final String STARTED_KEY = "started";
     public static final String TEAM_VALIDATION_REGEX = "^(\\d+?)\\1*$";
 
     public static String createNewGame(String playerId, String playerName) {
@@ -100,8 +103,36 @@ public class FireBaseUtils {
         return Observable.create(new FirebaseGameValidatorSubscriber(gameId));
     }
 
-    private static Observable<Game> getGameReaderObservable(String gameId) {
+    public static Observable<Game> getGameReaderObservable(String gameId) {
         return Observable.create(new FirebaseGameReader(gameId));
+    }
+
+    public void distributeCard(String gameId, String playerId, Card card) {
+        final DatabaseReference cardReference = FirebaseDatabase.getInstance()
+                .getReference(gameId)
+                .child(PLAYERS_KEY)
+                .child(playerId)
+                .child(HAND_KEY)
+                .push();
+
+        card.setId(cardReference.getKey());
+        cardReference.setValue(card);
+    }
+
+    public void clearHand(String gameId, String playerId) {
+        FirebaseDatabase.getInstance()
+                .getReference(gameId)
+                .child(PLAYERS_KEY)
+                .child(playerId)
+                .child(HAND_KEY)
+                .removeValue();
+    }
+
+    public void startGame(String gameId) {
+        FirebaseDatabase.getInstance()
+                .getReference(gameId)
+                .child(STARTED_KEY)
+                .setValue(true);
     }
 
     private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Boolean> {
