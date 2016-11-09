@@ -8,7 +8,6 @@ import java.util.UUID;
 import toothpick.Scope;
 import toothpick.Toothpick;
 import toothpick.configuration.Configuration;
-import toothpick.smoothie.module.SmoothieActivityModule;
 import toothpick.smoothie.module.SmoothieApplicationModule;
 
 public class SeeKwensApplication extends Application {

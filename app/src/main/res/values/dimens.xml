@@ -8,4 +8,5 @@
     <dimen name="paddingMedium">12dp</dimen>
     <dimen name="team_indicator_width_height">32dp</dimen>
     <dimen name="hand_fragment_peek_height">240dp</dimen>
+    <dimen name="hand_card_width">135dp</dimen>
 </resources>

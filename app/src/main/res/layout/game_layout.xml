@@ -18,8 +18,8 @@
         android:background="@color/white"
         app:layout_behavior="@string/bottom_sheet_behavior">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/hand_recyclerview"
+        <FrameLayout
+            android:id="@+id/hand_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 

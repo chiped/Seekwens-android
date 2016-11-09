@@ -135,6 +135,10 @@ public class FireBaseUtils {
                 .setValue(true);
     }
 
+    public Query getHandRef(String gameId, String playerId) {
+        return FirebaseDatabase.getInstance().getReference(gameId).child(PLAYERS_KEY).child(playerId).child(HAND_KEY);
+    }
+
     private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Boolean> {
 
         private final String playerName;
