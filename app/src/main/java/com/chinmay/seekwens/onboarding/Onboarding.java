@@ -8,6 +8,8 @@ import android.widget.Toast;
 
 import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.database.FireBaseUtils;
+import com.chinmay.seekwens.model.Game;
+import com.chinmay.seekwens.model.GameState;
 import com.chinmay.seekwens.ui.BaseSeeKwensActivity;
 import com.chinmay.seekwens.ui.Henson;
 import com.jakewharton.rxbinding.widget.RxTextView;
@@ -88,11 +90,17 @@ public class Onboarding extends BaseSeeKwensActivity {
     }
 
     private void moveToGameDetail(String gameId, boolean isOwner) {
-        final Intent gameDetailIntent = Henson.with(Onboarding.this).gotoGameDetail()
+        final Intent gameDetailIntent = Henson.with(this).gotoGameDetail()
                 .gameId(gameId)
                 .isOwner(isOwner)
                 .build();
-        Onboarding.this.startActivity(gameDetailIntent);
+        startActivity(gameDetailIntent);
+        finish();
+    }
+
+    private void moveToGame(String gameId) {
+        final Intent intent = Henson.with(this).gotoGame().gameId(gameId).build();
+        startActivity(intent);
         finish();
     }
 
@@ -113,7 +121,7 @@ public class Onboarding extends BaseSeeKwensActivity {
         final String gameId = gameIdField.getText().toString();
 
         gameJoinFirebaseSubscription = FireBaseUtils.joinGame(gameId, playerId, playerName)
-                .subscribe(new Subscriber<Boolean>() {
+                .subscribe(new Subscriber<Game>() {
                     @Override
                     public void onCompleted() {
 
@@ -125,9 +133,13 @@ public class Onboarding extends BaseSeeKwensActivity {
                     }
 
                     @Override
-                    public void onNext(Boolean isOwner) {
-                        Toast.makeText(Onboarding.this, getString(R.string.game_joining, gameId, playerName), Toast.LENGTH_LONG).show();
-                        moveToGameDetail(gameId, isOwner);
+                    public void onNext(Game game) {
+                        if (game.state == GameState.NOT_STARTED) {
+                            Toast.makeText(Onboarding.this, getString(R.string.game_joining, gameId, playerName), Toast.LENGTH_LONG).show();
+                            moveToGameDetail(gameId, playerId.equals(game.ownerId));
+                        } else if (game.state == GameState.STARTED && game.players.containsKey(playerId)) {
+                            moveToGame(gameId);
+                        }
                     }
                 });
     }

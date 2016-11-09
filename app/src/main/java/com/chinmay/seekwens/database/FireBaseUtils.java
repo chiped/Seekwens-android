@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
+import com.chinmay.seekwens.model.GameState;
 import com.chinmay.seekwens.model.Player;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -37,7 +38,8 @@ public class FireBaseUtils {
     public static final String PLAYERS_KEY = "players";
     public static final String TEAM_KEY = "team";
     public static final String HAND_KEY = "hand";
-    public static final String STARTED_KEY = "started";
+    public static final String GAME_STATE_KEY = "state";
+    public static final String DECK_ID_KEY = "deckId";
     public static final String TEAM_VALIDATION_REGEX = "^(\\d+?)\\1*$";
 
     public static String createNewGame(String playerId, String playerName) {
@@ -55,7 +57,7 @@ public class FireBaseUtils {
         return game.getId();
     }
 
-    public static Observable<Boolean> joinGame(final String gameId, final String playerId, final String playerName) {
+    public static Observable<Game> joinGame(final String gameId, final String playerId, final String playerName) {
         return Observable.create(new FirebaseGameJoinerSubscriber(gameId, playerId, playerName));
     }
 
@@ -128,18 +130,25 @@ public class FireBaseUtils {
                 .removeValue();
     }
 
-    public void startGame(String gameId) {
+    public void setDeck(String gameId, String deckId) {
         FirebaseDatabase.getInstance()
                 .getReference(gameId)
-                .child(STARTED_KEY)
-                .setValue(true);
+                .child(DECK_ID_KEY)
+                .setValue(deckId);
+    }
+
+    public void setGameState(String gameId, GameState gameState) {
+        FirebaseDatabase.getInstance()
+                .getReference(gameId)
+                .child(GAME_STATE_KEY)
+                .setValue(gameState);
     }
 
     public Query getHandRef(String gameId, String playerId) {
         return FirebaseDatabase.getInstance().getReference(gameId).child(PLAYERS_KEY).child(playerId).child(HAND_KEY);
     }
 
-    private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Boolean> {
+    private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Game> {
 
         private final String playerName;
         private final String playerId;
@@ -152,7 +161,7 @@ public class FireBaseUtils {
         }
 
         @Override
-        public void call(final Subscriber<? super Boolean> subscriber) {
+        public void call(final Subscriber<? super Game> subscriber) {
             Observable.create(new FirebaseGameCheckerSubscriber(gameId))
                     .subscribe(new Subscriber<Game>() {
                         @Override
@@ -188,7 +197,7 @@ public class FireBaseUtils {
 
                                 @Override
                                 public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                                    subscriber.onNext(playerId.equals(validGame.ownerId));
+                                    subscriber.onNext(validGame);
                                     subscriber.onCompleted();
                                 }
                             });
@@ -200,7 +209,8 @@ public class FireBaseUtils {
     private static final class FirebaseGameCheckerSubscriber implements Observable.OnSubscribe<Game> {
 
         public static final String NOT_FOUND_ERROR_STRING = "Game id %s doesn't exist";
-        public static final String GAME_RUNNING_ERROR_STRING = "Game %s has already started.";
+        public static final String GAME_RUNNING_ERROR_STRING = "Game %s has already finished.";
+        public static final String TRY_AGAIN_ERROR_STRING = "Game %s is being configured. Try again later.";
         private final String gameId;
 
         public FirebaseGameCheckerSubscriber(String gameId) {
@@ -222,8 +232,11 @@ public class FireBaseUtils {
                     }
 
                     final Game game = dataSnapshot.child(gameId).getValue(Game.class);
-                    if (game.started) {
+                    if (game.state == GameState.FINISHED) {
                         subscriber.onError(new IllegalStateException(String.format(GAME_RUNNING_ERROR_STRING, gameId)));
+                        return;
+                    } else if (game.state == GameState.STARTING) {
+                        subscriber.onError(new IllegalStateException(String.format(TRY_AGAIN_ERROR_STRING, gameId)));
                         return;
                     }
 

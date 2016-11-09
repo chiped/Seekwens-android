@@ -10,7 +10,7 @@ public class Game {
 
     public String id;
     public String ownerId;
-    public boolean started;
+    public GameState state = GameState.NOT_STARTED;
     public Map<String, Player> players;
 
     public Game() {

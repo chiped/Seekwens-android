@@ -13,6 +13,7 @@ import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.cards.models.DeckResponse;
 import com.chinmay.seekwens.database.FireBaseUtils;
 import com.chinmay.seekwens.model.Game;
+import com.chinmay.seekwens.model.GameState;
 import com.chinmay.seekwens.ui.BaseSeeKwensActivity;
 import com.chinmay.seekwens.ui.Henson;
 import com.chinmay.seekwens.util.GameUtil;
@@ -113,13 +114,25 @@ public class GameDetail extends BaseSeeKwensActivity {
                             .filter(new Func1<Game, Boolean>() {
                                 @Override
                                 public Boolean call(Game game) {
-                                    return !game.started;
+                                    return game.state == GameState.NOT_STARTED;
+                                }
+                            })
+                            .doOnNext(new Action1<Game>() {
+                                @Override
+                                public void call(Game game) {
+                                    gameUtil.setGameState(gameId, GameState.STARTING);
                                 }
                             })
                             .flatMap(new Func1<Game, Observable<DeckResponse>>() {
                                 @Override
                                 public Observable<DeckResponse> call(Game game) {
                                     return gameUtil.getNewDeckObservable();
+                                }
+                            })
+                            .doOnNext(new Action1<DeckResponse>() {
+                                @Override
+                                public void call(DeckResponse deckResponse) {
+                                    gameUtil.setDeck(gameId, deckResponse.deckId);
                                 }
                             })
                             .flatMap(new Func1<DeckResponse, Observable<Boolean>>() {
@@ -137,7 +150,7 @@ public class GameDetail extends BaseSeeKwensActivity {
                             .doOnNext(new Action1<Boolean>() {
                                 @Override
                                 public void call(Boolean aBoolean) {
-                                    gameUtil.startGame(gameId);
+                                    gameUtil.setGameState(gameId, GameState.STARTED);
                                 }
                             })
                             .observeOn(AndroidSchedulers.mainThread())

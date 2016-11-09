@@ -6,6 +6,7 @@ import com.chinmay.seekwens.database.FireBaseUtils;
 import com.chinmay.seekwens.gameapi.GameReader;
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
+import com.chinmay.seekwens.model.GameState;
 import com.chinmay.seekwens.model.Player;
 
 import javax.inject.Inject;
@@ -69,7 +70,10 @@ public class GameUtil {
                 });
     }
 
-    public void startGame(String gameId) {
-        fireBaseUtils.startGame(gameId);
+    public void setDeck(String gameId, String deckId) {
+        fireBaseUtils.setDeck(gameId, deckId);
+    }
+    public void setGameState(String gameId, GameState gameState) {
+        fireBaseUtils.setGameState(gameId, gameState);
     }
 }
