@@ -4,12 +4,15 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.FloatingActionButton;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.chinmay.seekwens.R;
+import com.chinmay.seekwens.game.board.BoardFragment;
+import com.chinmay.seekwens.game.hand.HandFragment;
 import com.chinmay.seekwens.ui.BaseSeeKwensActivity;
 import com.f2prateek.dart.InjectExtra;
 
@@ -18,23 +21,31 @@ import butterknife.BindView;
 public class Game extends BaseSeeKwensActivity {
 
     @BindView(R.id.bottom_sheet_hand) View bottomSheet;
+    @BindView(R.id.floating_play_button) FloatingActionButton playButton;
 
     @InjectExtra String gameId;
 
-    private HandDialogFragment handDialogFragment;
+    private HandFragment handFragment;
+    private BoardFragment boardFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setUpBoard();
         setUpHand();
     }
 
+    private void setUpBoard() {
+        boardFragment = new BoardFragment();
+        getSupportFragmentManager().beginTransaction().add(R.id.board_content, boardFragment).commit();
+    }
+
     private void setUpHand() {
-        handDialogFragment = new HandDialogFragment();
+        handFragment = new HandFragment();
         final Bundle bundle = new Bundle();
         bundle.putString("gameId", gameId);
-        handDialogFragment.setArguments(bundle);
-        getSupportFragmentManager().beginTransaction().add(R.id.hand_content, handDialogFragment).commit();
+        handFragment.setArguments(bundle);
+        getSupportFragmentManager().beginTransaction().add(R.id.hand_content, handFragment).commit();
 
         BottomSheetBehavior.from(bottomSheet).setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -44,7 +55,9 @@ public class Game extends BaseSeeKwensActivity {
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                handDialogFragment.setOffset(slideOffset);
+                handFragment.setOffset(slideOffset);
+                final float fabScale = 1 + Math.min(0, slideOffset);
+                playButton.animate().scaleX(fabScale).scaleY(fabScale).setDuration(0).start();
             }
         });
     }

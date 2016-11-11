@@ -1,4 +1,4 @@
-package com.chinmay.seekwens.game;
+package com.chinmay.seekwens.game.hand;
 
 import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.model.Card;

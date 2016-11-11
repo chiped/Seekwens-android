@@ -1,4 +1,4 @@
-package com.chinmay.seekwens.game;
+package com.chinmay.seekwens.game.hand;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -21,6 +21,6 @@ public class HandCardViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bind(Card card) {
-        Glide.with(imageView.getContext()).load(card.image).into(imageView);
+        Glide.with(imageView.getContext()).load(card.image).placeholder(R.drawable.ic_card_back).into(imageView);
     }
 }

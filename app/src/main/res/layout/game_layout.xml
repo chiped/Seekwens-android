@@ -6,6 +6,7 @@
     android:layout_height="match_parent">
 
     <FrameLayout
+        android:id="@+id/board_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
@@ -13,9 +14,9 @@
         android:id="@+id/bottom_sheet_hand"
         android:layout_width="match_parent"
         android:layout_height="240dp"
+        android:background="@color/white"
         app:behavior_hideable="true"
         app:behavior_peekHeight="100dp"
-        android:background="@color/white"
         app:layout_behavior="@string/bottom_sheet_behavior">
 
         <FrameLayout
@@ -26,10 +27,13 @@
     </RelativeLayout>
 
     <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floating_play_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_anchor="@id/bottom_sheet_hand"
         android:layout_margin="@dimen/paddingMedium"
+        android:src="@drawable/ic_send_white_24dp"
+        android:enabled="false"
+        app:layout_anchor="@id/bottom_sheet_hand"
         app:layout_anchorGravity="top|end"/>
 
 </android.support.design.widget.CoordinatorLayout>

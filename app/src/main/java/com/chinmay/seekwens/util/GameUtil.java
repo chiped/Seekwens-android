@@ -76,4 +76,8 @@ public class GameUtil {
     public void setGameState(String gameId, GameState gameState) {
         fireBaseUtils.setGameState(gameId, gameState);
     }
+
+    public String[] getBoard() {
+        return rules.board;
+    }
 }

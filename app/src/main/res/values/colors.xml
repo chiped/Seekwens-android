@@ -9,6 +9,7 @@
     <color name="colorButtonDisabled">#7986cb</color>
     <color name="red">#FF0000</color>
     <color name="grey3C">#3C3C3C</color>
+    <color name="grey8F">#8F8F8F</color>
 
     <array name="team_colors">
         <item>#F44336</item>

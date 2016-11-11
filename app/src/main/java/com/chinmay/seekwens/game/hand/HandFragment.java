@@ -1,4 +1,4 @@
-package com.chinmay.seekwens.game;
+package com.chinmay.seekwens.game.hand;
 
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -22,7 +22,7 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.chinmay.seekwens.SeeKwensApplication.PREFS;
 import static com.chinmay.seekwens.SeeKwensApplication.USER_ID_KEY;
 
-public class HandDialogFragment extends BaseSeeKwensFragment {
+public class HandFragment extends BaseSeeKwensFragment {
 
     @BindView(R.id.hand_recycler) RecyclerView handRecycler;
     @BindView(R.id.player_turn) TextView playerTurn;
@@ -55,7 +55,7 @@ public class HandDialogFragment extends BaseSeeKwensFragment {
                 if (parent.getChildAdapterPosition(view) == 0 ) {
                     return;
                 }
-                final float width = getResources().getDimension(R.dimen.hand_card_width);
+                final float width = getResources().getDimension(R.dimen.card_width);
                 final int leftOffset = (int) (0.75 * width * (1 - offset));
                 outRect.set(-leftOffset, 0, 0, 0);
             }
