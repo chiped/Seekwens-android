@@ -33,6 +33,7 @@
         android:layout_margin="@dimen/paddingMedium"
         android:src="@drawable/ic_send_white_24dp"
         android:enabled="false"
+        android:backgroundTint="@color/grey8F"
         app:layout_anchor="@id/bottom_sheet_hand"
         app:layout_anchorGravity="top|end"/>
 

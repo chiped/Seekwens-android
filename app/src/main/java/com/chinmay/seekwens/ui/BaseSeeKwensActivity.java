@@ -20,10 +20,10 @@ public abstract class BaseSeeKwensActivity extends AppCompatActivity {
         scope = Toothpick.openScopes(getApplication());
         super.onCreate(savedInstanceState);
         Toothpick.inject(this, scope);
-        setContentView(getlayoutId());
+        setContentView(getLayoutId());
         ButterKnife.bind(this);
         Dart.inject(this);
     }
 
-    protected abstract @LayoutRes int getlayoutId();
+    protected abstract @LayoutRes int getLayoutId();
 }

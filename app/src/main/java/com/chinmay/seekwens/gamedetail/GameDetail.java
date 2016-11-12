@@ -57,7 +57,7 @@ public class GameDetail extends BaseSeeKwensActivity {
     }
 
     @Override
-    protected int getlayoutId() {
+    protected int getLayoutId() {
         return R.layout.activity_game_detail;
     }
 
@@ -120,13 +120,7 @@ public class GameDetail extends BaseSeeKwensActivity {
                             .doOnNext(new Action1<Game>() {
                                 @Override
                                 public void call(Game game) {
-                                    gameUtil.setGameState(gameId, GameState.STARTING);
-                                }
-                            })
-                            .doOnNext(new Action1<Game>() {
-                                @Override
-                                public void call(Game game) {
-                                    gameUtil.setNewBoard(gameId);
+                                    gameUtil.readyNewGame(gameId);
                                 }
                             })
                             .flatMap(new Func1<Game, Observable<DeckResponse>>() {
@@ -171,7 +165,7 @@ public class GameDetail extends BaseSeeKwensActivity {
         @Override
         public void call() {
                 final Intent intent = Henson.with(GameDetail.this)
-                        .gotoGame()
+                        .gotoGameActivity()
                         .gameId(gameId)
                         .build();
                 startActivity(intent);

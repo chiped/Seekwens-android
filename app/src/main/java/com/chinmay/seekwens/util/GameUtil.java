@@ -79,15 +79,22 @@ public class GameUtil {
         fireBaseUtils.setGameState(gameId, gameState);
     }
 
-    public void setNewBoard(String gameId) {
-        fireBaseUtils.setBoard(gameId, rules.emptyBoard());
-    }
-
     public String[] getBoard() {
         return rules.board;
     }
 
     public Observable<ArrayList> getBoardObservable(String gameId) {
         return fireBaseUtils.getBoardObservable(gameId);
+    }
+
+    public void readyNewGame(String gameId) {
+        fireBaseUtils.setGameState(gameId, GameState.STARTING);
+        fireBaseUtils.setBoard(gameId, rules.emptyBoard());
+        fireBaseUtils.setCurrentPlayer(gameId, 0);
+        fireBaseUtils.setLastMove(gameId, null);
+    }
+
+    public Observable<Long> currentPlayerObservable(String gameId) {
+        return fireBaseUtils.currentPlayerObservable(gameId);
     }
 }

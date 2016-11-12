@@ -16,6 +16,8 @@
     <string name="game_joining">Joining game %1$s with name %2$s</string>
     <string name="game_created">Created game with id %1$s</string>
     <string name="show_hand">Show hand</string>
+    <string name="your_turn">It\'s your turn. Pick a card!</string>
+    <string name="waiting_for_turn">Waiting for other players to play.</string>
 
     <string-array name="team_names">
         <item>@string/red</item>

@@ -14,6 +14,8 @@ public class Game {
     public GameState state = GameState.NOT_STARTED;
     public Map<String, Player> players;
     public List<Integer> board;
+    public int currentPlayer;
+    public LastMove lastMove;
 
     public Game() {
         this.id = UUID.randomUUID().toString().substring(0, 5);

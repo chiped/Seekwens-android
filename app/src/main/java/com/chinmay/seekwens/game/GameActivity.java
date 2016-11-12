@@ -18,7 +18,7 @@ import com.f2prateek.dart.InjectExtra;
 
 import butterknife.BindView;
 
-public class Game extends BaseSeeKwensActivity {
+public class GameActivity extends BaseSeeKwensActivity {
 
     @BindView(R.id.bottom_sheet_hand) View bottomSheet;
     @BindView(R.id.floating_play_button) FloatingActionButton playButton;
@@ -66,7 +66,7 @@ public class Game extends BaseSeeKwensActivity {
     }
 
     @Override
-    protected int getlayoutId() {
+    protected int getLayoutId() {
         return R.layout.game_layout;
     }
 

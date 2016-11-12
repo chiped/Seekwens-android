@@ -5,6 +5,7 @@ import android.util.Log;
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
 import com.chinmay.seekwens.model.GameState;
+import com.chinmay.seekwens.model.LastMove;
 import com.chinmay.seekwens.model.Player;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -43,6 +44,8 @@ public class FireBaseUtils {
     public static final String GAME_STATE_KEY = "state";
     public static final String DECK_ID_KEY = "deckId";
     public static final String BOARD_KEY = "board";
+    public static final String CURRENT_PLAYER_KEY = "currentPlayer";
+    public static final String LAST_MOVE_KEY = "lastMove";
     public static final String TEAM_VALIDATION_REGEX = "^(\\d+?)\\1*$";
 
     public static String createNewGame(String playerId, String playerName) {
@@ -160,7 +163,7 @@ public class FireBaseUtils {
 
     public Observable<ArrayList> getBoardObservable(String gameId) {
         return RxFirebase.create(
-                FirebaseDatabase.getInstance().getReference(gameId).child(FireBaseUtils.BOARD_KEY),
+                FirebaseDatabase.getInstance().getReference(gameId).child(BOARD_KEY),
                 Object.class)
                 .map(new Func1<Object, ArrayList>() {
                     @Override
@@ -168,6 +171,26 @@ public class FireBaseUtils {
                         return ((ArrayList<Long>) o);
                     }
                 });
+    }
+
+    public void setCurrentPlayer(String gameId, int playerOrder) {
+        FirebaseDatabase.getInstance()
+                .getReference(gameId)
+                .child(CURRENT_PLAYER_KEY)
+                .setValue(playerOrder);
+    }
+
+    public void setLastMove(String gameId, LastMove lastmove) {
+        FirebaseDatabase.getInstance()
+                .getReference(gameId)
+                .child(LAST_MOVE_KEY)
+                .setValue(lastmove);
+    }
+
+    public Observable<Long> currentPlayerObservable(String gameId) {
+        return RxFirebase.create(
+                FirebaseDatabase.getInstance().getReference(gameId).child(CURRENT_PLAYER_KEY),
+                Long.class);
     }
 
     private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Game> {
