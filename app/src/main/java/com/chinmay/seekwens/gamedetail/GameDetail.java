@@ -123,6 +123,12 @@ public class GameDetail extends BaseSeeKwensActivity {
                                     gameUtil.setGameState(gameId, GameState.STARTING);
                                 }
                             })
+                            .doOnNext(new Action1<Game>() {
+                                @Override
+                                public void call(Game game) {
+                                    gameUtil.setNewBoard(gameId);
+                                }
+                            })
                             .flatMap(new Func1<Game, Observable<DeckResponse>>() {
                                 @Override
                                 public Observable<DeckResponse> call(Game game) {

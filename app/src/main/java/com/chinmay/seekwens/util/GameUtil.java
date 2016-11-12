@@ -9,6 +9,8 @@ import com.chinmay.seekwens.model.Game;
 import com.chinmay.seekwens.model.GameState;
 import com.chinmay.seekwens.model.Player;
 
+import java.util.ArrayList;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -77,7 +79,15 @@ public class GameUtil {
         fireBaseUtils.setGameState(gameId, gameState);
     }
 
+    public void setNewBoard(String gameId) {
+        fireBaseUtils.setBoard(gameId, rules.emptyBoard());
+    }
+
     public String[] getBoard() {
         return rules.board;
+    }
+
+    public Observable<ArrayList> getBoardObservable(String gameId) {
+        return fireBaseUtils.getBoardObservable(gameId);
     }
 }

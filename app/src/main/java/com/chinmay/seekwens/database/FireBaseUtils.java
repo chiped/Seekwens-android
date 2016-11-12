@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +31,7 @@ import javax.inject.Singleton;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 @Singleton
@@ -40,6 +42,7 @@ public class FireBaseUtils {
     public static final String HAND_KEY = "hand";
     public static final String GAME_STATE_KEY = "state";
     public static final String DECK_ID_KEY = "deckId";
+    public static final String BOARD_KEY = "board";
     public static final String TEAM_VALIDATION_REGEX = "^(\\d+?)\\1*$";
 
     public static String createNewGame(String playerId, String playerName) {
@@ -146,6 +149,25 @@ public class FireBaseUtils {
 
     public Query getHandRef(String gameId, String playerId) {
         return FirebaseDatabase.getInstance().getReference(gameId).child(PLAYERS_KEY).child(playerId).child(HAND_KEY);
+    }
+
+    public void setBoard(String gameId, List<Integer> board) {
+        FirebaseDatabase.getInstance()
+                .getReference(gameId)
+                .child(BOARD_KEY)
+                .setValue(board);
+    }
+
+    public Observable<ArrayList> getBoardObservable(String gameId) {
+        return RxFirebase.create(
+                FirebaseDatabase.getInstance().getReference(gameId).child(FireBaseUtils.BOARD_KEY),
+                Object.class)
+                .map(new Func1<Object, ArrayList>() {
+                    @Override
+                    public ArrayList call(Object o) {
+                        return ((ArrayList<Long>) o);
+                    }
+                });
     }
 
     private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Game> {

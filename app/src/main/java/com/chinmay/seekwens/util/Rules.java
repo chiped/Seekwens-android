@@ -1,9 +1,14 @@
 package com.chinmay.seekwens.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Singleton;
 
 @Singleton
 public class Rules {
+
+    private static int BOARD_SIZE = 100;
 
     public final String[] board = {
             "XX","6D","7D","8D","9D","0D","QD","KD","AD","XX",
@@ -40,5 +45,13 @@ public class Rules {
 
     public int sequencesNeeded(int teams) {
         return teams == 2 ? 2 : 1;
+    }
+
+    public List<Integer> emptyBoard() {
+        List<Integer> board = new ArrayList<>(BOARD_SIZE);
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            board.add(-1);
+        }
+        return board;
     }
 }

@@ -37,6 +37,9 @@ public class Game extends BaseSeeKwensActivity {
 
     private void setUpBoard() {
         boardFragment = new BoardFragment();
+        final Bundle bundle = new Bundle();
+        bundle.putString("gameId", gameId);
+        boardFragment.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().add(R.id.board_content, boardFragment).commit();
     }
 
