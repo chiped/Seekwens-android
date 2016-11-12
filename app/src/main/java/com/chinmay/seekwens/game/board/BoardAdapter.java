@@ -6,16 +6,20 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.chinmay.seekwens.R;
+import com.chinmay.seekwens.model.Card;
 
 import java.util.List;
 
-public class BoardAdapter extends RecyclerView.Adapter<BoardCellViewHolder> {
+public class BoardAdapter extends RecyclerView.Adapter<BoardCellViewHolder> implements BoardCellViewHolder.BoardCellClickListener {
 
     private final String[] dataSet;
     private List<Long> chips;
+    private Card selectedCard;
+    private CellSelectListener cellSelectListener;
 
-    public BoardAdapter(String[] dataSet) {
+    public BoardAdapter(String[] dataSet, CellSelectListener cellSelectListener) {
         this.dataSet = dataSet;
+        this.cellSelectListener = cellSelectListener;
     }
 
     @Override
@@ -23,12 +27,14 @@ public class BoardAdapter extends RecyclerView.Adapter<BoardCellViewHolder> {
         final View view = LayoutInflater.
                 from(parent.getContext()).
                 inflate(R.layout.board_cell_layout, parent, false);
-        return new BoardCellViewHolder(view);
+        return new BoardCellViewHolder(view, this);
     }
 
     @Override
     public void onBindViewHolder(BoardCellViewHolder holder, int position) {
-        holder.bind(dataSet[position], chips == null ? -1 : chips.get(position).intValue());
+        holder.bind(dataSet[position],
+                chips == null ? -1 : chips.get(position).intValue(),
+                selectedCard);
     }
 
     @Override
@@ -38,5 +44,23 @@ public class BoardAdapter extends RecyclerView.Adapter<BoardCellViewHolder> {
 
     public void setChips(List<Long> chips) {
         this.chips = chips;
+    }
+
+    public void highlightCard(Card card) {
+        selectedCard = card;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void boardCellClicked(int position) {
+        if (cellSelectListener != null) {
+            cellSelectListener.cellClicked(position);
+            selectedCard = null;
+        }
+
+    }
+
+    interface CellSelectListener {
+        void cellClicked(int position);
     }
 }

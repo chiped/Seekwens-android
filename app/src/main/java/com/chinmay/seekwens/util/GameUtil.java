@@ -97,4 +97,9 @@ public class GameUtil {
     public Observable<Long> currentPlayerObservable(String gameId) {
         return fireBaseUtils.currentPlayerObservable(gameId);
     }
+
+    public void placeCoin(String gameId, int position, int playerTeam) {
+        //TODO update currentPlayer
+        fireBaseUtils.placeCoin(gameId, position, playerTeam);
+    }
 }

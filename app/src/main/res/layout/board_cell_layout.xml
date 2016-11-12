@@ -19,4 +19,11 @@
         android:src="@drawable/ic_chip"
         android:visibility="gone"
         tools:visibility="visible"/>
+
+    <View
+        android:id="@+id/overlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/card_selected"
+        android:visibility="gone"/>
 </FrameLayout>

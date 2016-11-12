@@ -49,6 +49,8 @@ public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.Ca
     private Game game;
     private int playerOrder = -1;
     private Subscription currentPlayerSubscription;
+    private HandListener handListener;
+    private boolean myTurn;
 
     @Override
     protected int getLayoutId() {
@@ -86,11 +88,17 @@ public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.Ca
                         playerOrder = player.order;
                     }
                 })
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Player>() {
+                .map(new Func1<Player, Boolean>() {
                     @Override
-                    public void call(Player player) {
-                        setPlayerTurnMessage(game.currentPlayer == playerOrder);
+                    public Boolean call(Player player) {
+                        return game.currentPlayer == playerOrder;
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Boolean>() {
+                    @Override
+                    public void call(Boolean myTurn) {
+                        updateMyTurn(myTurn);
                     }
                 });
 
@@ -131,10 +139,15 @@ public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.Ca
                 .subscribe(new Action1<Boolean>() {
                     @Override
                     public void call(Boolean myTurn) {
-                        setPlayerTurnMessage(myTurn);
-                        handRecycler.setClickable(myTurn);
+                        updateMyTurn(myTurn);
                     }
                 });
+    }
+
+    private void updateMyTurn(boolean myTurn) {
+        this.myTurn = myTurn;
+        setPlayerTurnMessage();
+        handRecycler.setClickable(myTurn);
     }
 
     @Override
@@ -145,7 +158,7 @@ public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.Ca
         super.onPause();
     }
 
-    private void setPlayerTurnMessage(boolean myTurn) {
+    private void setPlayerTurnMessage() {
         if (myTurn) {
             playerTurn.setText(R.string.your_turn);
         } else {
@@ -153,8 +166,14 @@ public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.Ca
         }
     }
 
+    public void setHandListener(HandListener handListener) {
+        this.handListener = handListener;
+    }
+
     @Override
     public void cardSelected(Card card) {
-        //TODO let activity know card is selected
+        if (myTurn && handListener != null) {
+            handListener.cardSelected(card);
+        }
     }
 }

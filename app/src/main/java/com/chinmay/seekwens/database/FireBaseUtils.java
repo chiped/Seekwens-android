@@ -193,6 +193,14 @@ public class FireBaseUtils {
                 Long.class);
     }
 
+    public void placeCoin(String gameId, int position, int playerTeam) {
+        FirebaseDatabase.getInstance()
+                .getReference(gameId)
+                .child(BOARD_KEY)
+                .child(String.valueOf(position))
+                .setValue(playerTeam);
+    }
+
     private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Game> {
 
         private final String playerName;

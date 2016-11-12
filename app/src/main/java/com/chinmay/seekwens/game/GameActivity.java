@@ -12,13 +12,16 @@ import android.view.View;
 
 import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.game.board.BoardFragment;
+import com.chinmay.seekwens.game.board.CellListener;
 import com.chinmay.seekwens.game.hand.HandFragment;
+import com.chinmay.seekwens.game.hand.HandListener;
+import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.ui.BaseSeeKwensActivity;
 import com.f2prateek.dart.InjectExtra;
 
 import butterknife.BindView;
 
-public class GameActivity extends BaseSeeKwensActivity {
+public class GameActivity extends BaseSeeKwensActivity implements HandListener, CellListener {
 
     @BindView(R.id.bottom_sheet_hand) View bottomSheet;
     @BindView(R.id.floating_play_button) FloatingActionButton playButton;
@@ -40,6 +43,7 @@ public class GameActivity extends BaseSeeKwensActivity {
         final Bundle bundle = new Bundle();
         bundle.putString("gameId", gameId);
         boardFragment.setArguments(bundle);
+        boardFragment.setCellListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.board_content, boardFragment).commit();
     }
 
@@ -48,6 +52,7 @@ public class GameActivity extends BaseSeeKwensActivity {
         final Bundle bundle = new Bundle();
         bundle.putString("gameId", gameId);
         handFragment.setArguments(bundle);
+        handFragment.setHandListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.hand_content, handFragment).commit();
 
         BottomSheetBehavior.from(bottomSheet).setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
@@ -83,5 +88,17 @@ public class GameActivity extends BaseSeeKwensActivity {
             BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED);
         }
         return true;
+    }
+
+    @Override
+    public void cardSelected(Card card) {
+        if (boardFragment != null) {
+            boardFragment.cardSelected(card);
+        }
+    }
+
+    @Override
+    public void cellSelected(int position, int playerTeam) {
+        //TODO deselect hand, discard card and draw new
     }
 }
