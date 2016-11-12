@@ -13,7 +13,7 @@
     <dimen name="hand_fragment_peek_height">240dp</dimen>
 
     <dimen name="card_width">135dp</dimen>
-    <dimen name="card_height">220dp</dimen>
+    <dimen name="card_height">192dp</dimen>
 
     <dimen name="board_cell_width">68dp</dimen>
     <dimen name="board_cell_height">92dp</dimen>

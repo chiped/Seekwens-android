@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.database.FireBaseUtils;
 import com.chinmay.seekwens.game.GameActivity;
+import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
 import com.chinmay.seekwens.model.Player;
 import com.chinmay.seekwens.ui.BaseSeeKwensFragment;
@@ -32,7 +33,7 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.chinmay.seekwens.SeeKwensApplication.PREFS;
 import static com.chinmay.seekwens.SeeKwensApplication.USER_ID_KEY;
 
-public class HandFragment extends BaseSeeKwensFragment {
+public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.CardSelectListener {
 
     @BindView(R.id.hand_recycler) RecyclerView handRecycler;
     @BindView(R.id.player_turn) TextView playerTurn;
@@ -94,7 +95,7 @@ public class HandFragment extends BaseSeeKwensFragment {
                 });
 
         final Query handRef = fireBaseUtils.getHandRef(gameId, playerId);
-        handAdapter = new HandAdapter(handRef);
+        handAdapter = new HandAdapter(handRef, this);
         handRecycler.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         handRecycler.setAdapter(handAdapter);
         handRecycler.addItemDecoration(new RecyclerView.ItemDecoration() {
@@ -131,6 +132,7 @@ public class HandFragment extends BaseSeeKwensFragment {
                     @Override
                     public void call(Boolean myTurn) {
                         setPlayerTurnMessage(myTurn);
+                        handRecycler.setClickable(myTurn);
                     }
                 });
     }
@@ -149,5 +151,10 @@ public class HandFragment extends BaseSeeKwensFragment {
         } else {
             playerTurn.setText(R.string.waiting_for_turn);
         }
+    }
+
+    @Override
+    public void cardSelected(Card card) {
+        //TODO let activity know card is selected
     }
 }
