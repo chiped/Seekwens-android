@@ -41,15 +41,19 @@ public class HandAdapter extends FirebaseRecyclerAdapter<Card, HandCardViewHolde
         }
     }
 
-    public Card deselectCard() {
-        Card card = null;
+    public void deselectCard() {
         if (selectedIndex != -1) {
-            card = getItem(selectedIndex);
             notifyItemChanged(selectedIndex);
         }
         selectedIndex = -1;
         notifyItemChanged(selectedIndex);
-        return card;
+    }
+
+    public Card getSelectedCard() {
+        if (selectedIndex == -1) {
+            return null;
+        }
+        return getItem(selectedIndex);
     }
 
     interface CardSelectListener {

@@ -150,7 +150,11 @@ public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.Ca
     private void updateMyTurn(boolean myTurn) {
         this.myTurn = myTurn;
         setPlayerTurnMessage();
-        handRecycler.setClickable(myTurn);
+        handRecycler.setEnabled(myTurn);
+        final Card card = handAdapter.getSelectedCard();
+        if (card != null && handListener != null) {
+            handListener.cardSelected(card);
+        }
     }
 
     @Override
@@ -181,8 +185,9 @@ public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.Ca
     }
 
     public void deselectCard() {
-        final Card card = handAdapter.deselectCard();
+        final Card card = handAdapter.getSelectedCard();
         if (card != null) {
+            handAdapter.deselectCard();
             gameUtil.drawNewCard(game, playerId, card);
         }
     }
