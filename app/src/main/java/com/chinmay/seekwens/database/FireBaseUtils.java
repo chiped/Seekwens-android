@@ -201,6 +201,16 @@ public class FireBaseUtils {
                 .setValue(playerTeam);
     }
 
+    public void discardCard(String gameId, String playerId, String cardId) {
+        FirebaseDatabase.getInstance()
+                .getReference(gameId)
+                .child(PLAYERS_KEY)
+                .child(playerId)
+                .child(HAND_KEY)
+                .child(cardId)
+                .removeValue();
+    }
+
     private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Game> {
 
         private final String playerName;

@@ -133,6 +133,9 @@ public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.Ca
                 .map(new Func1<Long, Boolean>() {
                     @Override
                     public Boolean call(Long currentPlayer) {
+                        if (game != null) {
+                            game.currentPlayer = currentPlayer.intValue();
+                        }
                         return currentPlayer.intValue() == playerOrder;
                     }
                 })
@@ -174,6 +177,13 @@ public class HandFragment extends BaseSeeKwensFragment implements HandAdapter.Ca
     public void cardSelected(Card card) {
         if (myTurn && handListener != null) {
             handListener.cardSelected(card);
+        }
+    }
+
+    public void deselectCard() {
+        final Card card = handAdapter.deselectCard();
+        if (card != null) {
+            gameUtil.drawNewCard(game, playerId, card);
         }
     }
 }

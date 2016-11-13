@@ -1,5 +1,7 @@
 package com.chinmay.seekwens.util;
 
+import android.util.Log;
+
 import com.chinmay.seekwens.cards.CardManager;
 import com.chinmay.seekwens.cards.models.DeckResponse;
 import com.chinmay.seekwens.database.FireBaseUtils;
@@ -15,6 +17,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import rx.Observable;
+import rx.Subscriber;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
@@ -99,7 +102,31 @@ public class GameUtil {
     }
 
     public void placeCoin(String gameId, int position, int playerTeam) {
-        //TODO update currentPlayer
         fireBaseUtils.placeCoin(gameId, position, playerTeam);
+    }
+
+    public void drawNewCard(final Game game, final String playerId, final Card oldCard) {
+        cardManager.drawCard(game.deckId)
+                .subscribeOn(Schedulers.io())
+                .subscribe(new Subscriber<Card>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                        Log.e("ERROR", e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(Card newCard) {
+                        final int nextPlayer = (game.currentPlayer + 1) % game.players.size();
+                        fireBaseUtils.setCurrentPlayer(game.id, nextPlayer);
+                        fireBaseUtils.discardCard(game.id, playerId, oldCard.id);
+                        fireBaseUtils.distributeCard(game.id, playerId, newCard);
+                    }
+                });
     }
 }

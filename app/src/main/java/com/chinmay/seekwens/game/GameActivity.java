@@ -99,6 +99,6 @@ public class GameActivity extends BaseSeeKwensActivity implements HandListener, 
 
     @Override
     public void cellSelected(int position, int playerTeam) {
-        //TODO deselect hand, discard card and draw new
+        handFragment.deselectCard();
     }
 }

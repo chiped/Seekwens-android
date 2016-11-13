@@ -11,6 +11,7 @@ public class Game {
 
     public String id;
     public String ownerId;
+    public String deckId;
     public GameState state = GameState.NOT_STARTED;
     public Map<String, Player> players;
     public List<Integer> board;
