@@ -1,7 +1,13 @@
 package com.chinmay.seekwens.util;
 
+import com.chinmay.seekwens.cards.Cards;
+import com.chinmay.seekwens.model.Card;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Singleton;
 
@@ -10,7 +16,10 @@ public class Rules {
 
     private static int BOARD_SIZE = 100;
 
-    public final String[] board = {
+    private static final Set<String> oneEyedJacks = new HashSet<>(Arrays.asList(new String[] {Cards.HJ, Cards.SJ}));
+    private static final Set<String> twoEyedJacks = new HashSet<>(Arrays.asList(new String[] {Cards.DJ, Cards.CJ}));
+
+    public static final String[] board = {
             "XX","6D","7D","8D","9D","0D","QD","KD","AD","XX",
             "5D","3H","2H","2S","3S","4S","5S","6S","7S","AC",
             "4D","4H","KD","AD","AC","KC","QC","0C","8S","KC",
@@ -53,5 +62,25 @@ public class Rules {
             board.add(-1);
         }
         return board;
+    }
+
+    public boolean canPlayCardHere(Card selectedCard, String cardCode, int teamCode, int playerTeam) {
+        if (selectedCard == null) {
+            return false;
+        }
+
+        if (oneEyedJacks.contains(selectedCard.code)) {
+            return teamCode != -1 && teamCode != playerTeam;
+        }
+
+        if (twoEyedJacks.contains(selectedCard.code)) {
+            return teamCode == -1;
+        }
+
+        return selectedCard.code.equals(cardCode) && teamCode == -1;
+    }
+
+    public boolean shouldRemoveCoin(String cardCode) {
+        return oneEyedJacks.contains(cardCode);
     }
 }

@@ -16,6 +16,7 @@ public class BoardAdapter extends RecyclerView.Adapter<BoardCellViewHolder> impl
     private List<Long> chips;
     private Card selectedCard;
     private CellSelectListener cellSelectListener;
+    private int playerTeam = -1;
 
     public BoardAdapter(String[] dataSet, CellSelectListener cellSelectListener) {
         this.dataSet = dataSet;
@@ -34,7 +35,8 @@ public class BoardAdapter extends RecyclerView.Adapter<BoardCellViewHolder> impl
     public void onBindViewHolder(BoardCellViewHolder holder, int position) {
         holder.bind(dataSet[position],
                 chips == null ? -1 : chips.get(position).intValue(),
-                selectedCard);
+                selectedCard,
+                playerTeam);
     }
 
     @Override
@@ -58,6 +60,10 @@ public class BoardAdapter extends RecyclerView.Adapter<BoardCellViewHolder> impl
             selectedCard = null;
         }
 
+    }
+
+    public void setPlayerTeam(int playerTeam) {
+        this.playerTeam = playerTeam;
     }
 
     interface CellSelectListener {

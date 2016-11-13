@@ -6,10 +6,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import com.chinmay.seekwens.R;
-import com.chinmay.seekwens.game.hand.HandFragment;
 import com.chinmay.seekwens.game.hand.HandListener;
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
+import com.chinmay.seekwens.model.LastMove;
 import com.chinmay.seekwens.model.Player;
 import com.chinmay.seekwens.ui.BaseSeeKwensFragment;
 import com.chinmay.seekwens.util.GameUtil;
@@ -43,6 +43,7 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
     private String playerId;
     private int playerTeam;
     private CellListener cellListener;
+    private Card selectedHandCard;
 
     @Override
     protected int getLayoutId() {
@@ -72,6 +73,7 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
                     @Override
                     public void call(Player player) {
                         playerTeam = player.team;
+                        boardAdapter.setPlayerTeam(playerTeam);
                     }
                 });
 
@@ -109,13 +111,19 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
 
     @Override
     public void cardSelected(Card card) {
+        this.selectedHandCard = card;
         boardAdapter.highlightCard(card);
     }
 
     @Override
     public void cellClicked(int position) {
         //TODO possibly move this to GameActivity and enable send button
-        gameUtil.placeCoin(gameId, position, playerTeam);
+        final LastMove lastMove = new LastMove();
+        lastMove.card = selectedHandCard.code;
+        lastMove.player = playerId;
+        lastMove.team = playerTeam;
+        lastMove.tile = position;
+        gameUtil.playMove(gameId, lastMove);
         if (cellListener != null) {
             cellListener.cellSelected(position, playerTeam);
         }

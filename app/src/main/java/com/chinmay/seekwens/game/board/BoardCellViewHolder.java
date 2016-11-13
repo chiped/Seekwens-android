@@ -8,10 +8,15 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.model.Card;
+import com.chinmay.seekwens.util.Rules;
+
+import javax.inject.Inject;
 
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import toothpick.Scope;
+import toothpick.Toothpick;
 
 public class BoardCellViewHolder extends RecyclerView.ViewHolder {
 
@@ -23,16 +28,20 @@ public class BoardCellViewHolder extends RecyclerView.ViewHolder {
 
     @BindArray(R.array.team_colors) int[] teamColors;
 
+    @Inject Rules rules;
+
     private BoardCellClickListener clickListener;
 
     public BoardCellViewHolder(View itemView, BoardCellClickListener clickListener) {
         super(itemView);
         this.clickListener = clickListener;
         ButterKnife.bind(this, itemView);
+        final Scope scope = Toothpick.openScope(itemView.getContext().getApplicationContext());
+        Toothpick.inject(this, scope);
         overlay.setOnClickListener(new CellClickListenerImpl());
     }
 
-    public void bind(String cardCode, int teamCode, Card selectedCard) {
+    public void bind(String cardCode, int teamCode, Card selectedCard, int playerTeam) {
         final String url = String.format(IMAGE_URL, cardCode);
         Glide.with(imageView.getContext())
                 .load(url)
@@ -47,8 +56,7 @@ public class BoardCellViewHolder extends RecyclerView.ViewHolder {
             chip.setColorFilter(teamColors[teamCode], PorterDuff.Mode.MULTIPLY);
         }
 
-        //TODO add logic for jacks
-        if (selectedCard != null && cardCode.equals(selectedCard.code) && teamCode == -1) {
+        if (rules.canPlayCardHere(selectedCard, cardCode, teamCode, playerTeam)) {
             overlay.setVisibility(View.VISIBLE);
         } else {
             overlay.setVisibility(View.GONE);

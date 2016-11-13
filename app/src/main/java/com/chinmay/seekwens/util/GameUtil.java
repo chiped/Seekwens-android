@@ -9,6 +9,7 @@ import com.chinmay.seekwens.gameapi.GameReader;
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
 import com.chinmay.seekwens.model.GameState;
+import com.chinmay.seekwens.model.LastMove;
 import com.chinmay.seekwens.model.Player;
 
 import java.util.ArrayList;
@@ -101,8 +102,13 @@ public class GameUtil {
         return fireBaseUtils.currentPlayerObservable(gameId);
     }
 
-    public void placeCoin(String gameId, int position, int playerTeam) {
-        fireBaseUtils.placeCoin(gameId, position, playerTeam);
+    public void playMove(String gameId, LastMove lastMove) {
+        if (rules.shouldRemoveCoin(lastMove.card)) {
+            fireBaseUtils.placeCoin(gameId, lastMove.tile, -1);
+        } else {
+            fireBaseUtils.placeCoin(gameId, lastMove.tile, lastMove.team);
+        }
+        fireBaseUtils.setLastMove(gameId, lastMove);
     }
 
     public void drawNewCard(final Game game, final String playerId, final Card oldCard) {
