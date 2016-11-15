@@ -211,6 +211,12 @@ public class FireBaseUtils {
                 .removeValue();
     }
 
+    public Observable<GameState> getGameStateObservable(String gameId) {
+        return RxFirebase.create(
+                FirebaseDatabase.getInstance().getReference(gameId).child(GAME_STATE_KEY),
+                GameState.class);
+    }
+
     private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Game> {
 
         private final String playerName;

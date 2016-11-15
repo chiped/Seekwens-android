@@ -13,6 +13,9 @@ import com.chinmay.seekwens.model.LastMove;
 import com.chinmay.seekwens.model.Player;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -102,13 +105,15 @@ public class GameUtil {
         return fireBaseUtils.currentPlayerObservable(gameId);
     }
 
-    public void playMove(String gameId, LastMove lastMove) {
+    public boolean playMove(String gameId, LastMove lastMove) {
+        fireBaseUtils.setLastMove(gameId, lastMove);
         if (rules.shouldRemoveCoin(lastMove.card)) {
             fireBaseUtils.placeCoin(gameId, lastMove.tile, -1);
+            return true;
         } else {
             fireBaseUtils.placeCoin(gameId, lastMove.tile, lastMove.team);
+            return false;
         }
-        fireBaseUtils.setLastMove(gameId, lastMove);
     }
 
     public void drawNewCard(final Game game, final String playerId, final Card oldCard) {
@@ -134,5 +139,39 @@ public class GameUtil {
                         fireBaseUtils.distributeCard(game.id, playerId, newCard);
                     }
                 });
+    }
+
+    public void checkWinner(String gameId, List<Long> chips, long playerTeam, int position, boolean didRemove, int totalTeams) {
+        final ArrayList<Long> chipsCopy = new ArrayList<>(chips);
+        chipsCopy.set(position, didRemove ? -1 : playerTeam);
+        final String[][] chips2D = rules.transform2D(chipsCopy, playerTeam);
+        int sequences = 0;
+        final String horizontal = rules.horizontalString(chips2D);
+        sequences += countSequences(horizontal, playerTeam);
+        final String vertical = rules.verticalString(chips2D);
+        sequences += countSequences(vertical, playerTeam);
+        final String backSlash = rules.backSlashString(chips2D);
+        sequences += countSequences(backSlash, playerTeam);
+        final String forwardSlash = rules.forwardSlashString(chips2D);
+        sequences += countSequences(forwardSlash, playerTeam);
+
+        if (sequences >= rules.sequencesNeeded(totalTeams)) {
+            fireBaseUtils.setCurrentPlayer(gameId, -1);
+            fireBaseUtils.setGameState(gameId, GameState.FINISHED);
+        }
+    }
+
+    private int countSequences(String board, long playerTeam) {
+        final Pattern pattern = Pattern.compile(String.format("%d{5,}", playerTeam));
+        final Matcher matcher = pattern.matcher(board);
+        int sum = 0;
+        while (matcher.find()) {
+            sum += matcher.group(0).length() > 9 ? 2 : 1;
+        }
+        return sum;
+    }
+
+    public Observable<GameState> getGameStateObservable(String gameId) {
+        return fireBaseUtils.getGameStateObservable(gameId);
     }
 }

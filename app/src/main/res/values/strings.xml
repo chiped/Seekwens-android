@@ -18,6 +18,13 @@
     <string name="show_hand">Show hand</string>
     <string name="your_turn">It\'s your turn. Pick a card!</string>
     <string name="waiting_for_turn">Waiting for other players to play.</string>
+    <string name="game_quit_confirmation">Are you sure you want to quit the game</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+    <string name="game_over">Game over</string>
+    <string name="quit">QUIT</string>
+    <string name="inspect_board">VIEW BOARD</string>
+    <string name="winning_message">Someone won the game.</string>
 
     <string-array name="team_names">
         <item>@string/red</item>

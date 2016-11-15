@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.database.FireBaseUtils;
-import com.chinmay.seekwens.game.GameActivity;
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
 import com.chinmay.seekwens.model.Player;

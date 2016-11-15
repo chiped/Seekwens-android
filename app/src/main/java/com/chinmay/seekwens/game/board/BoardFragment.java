@@ -1,7 +1,10 @@
 package com.chinmay.seekwens.game.board;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
@@ -9,6 +12,7 @@ import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.game.hand.HandListener;
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
+import com.chinmay.seekwens.model.GameState;
 import com.chinmay.seekwens.model.LastMove;
 import com.chinmay.seekwens.model.Player;
 import com.chinmay.seekwens.ui.BaseSeeKwensFragment;
@@ -16,6 +20,8 @@ import com.chinmay.seekwens.util.GameUtil;
 import com.f2prateek.dart.InjectExtra;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -44,6 +50,7 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
     private int playerTeam;
     private CellListener cellListener;
     private Card selectedHandCard;
+    private int totalTeams;
 
     @Override
     protected int getLayoutId() {
@@ -60,6 +67,11 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
                 .flatMap(new Func1<Game, Observable<Player>>() {
                     @Override
                     public Observable<Player> call(Game game) {
+                        final Set<Integer> teams = new HashSet<>();
+                        for (Player player : game.players.values()) {
+                            teams.add(player.team);
+                        }
+                        totalTeams = teams.size();
                         return Observable.from(game.players.values());
                     }
                 })
@@ -123,9 +135,10 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
         lastMove.player = playerId;
         lastMove.team = playerTeam;
         lastMove.tile = position;
-        gameUtil.playMove(gameId, lastMove);
+        final boolean didRemove = gameUtil.playMove(gameId, lastMove);
         if (cellListener != null) {
             cellListener.cellSelected(position, playerTeam);
         }
+        gameUtil.checkWinner(gameId, boardAdapter.getChips(), playerTeam, position, didRemove, totalTeams);
     }
 }

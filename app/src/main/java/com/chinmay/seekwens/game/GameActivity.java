@@ -1,5 +1,6 @@
 package com.chinmay.seekwens.game;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,10 +17,17 @@ import com.chinmay.seekwens.game.board.CellListener;
 import com.chinmay.seekwens.game.hand.HandFragment;
 import com.chinmay.seekwens.game.hand.HandListener;
 import com.chinmay.seekwens.model.Card;
+import com.chinmay.seekwens.model.GameState;
 import com.chinmay.seekwens.ui.BaseSeeKwensActivity;
+import com.chinmay.seekwens.ui.SeeKwensDialogFragment;
+import com.chinmay.seekwens.util.GameUtil;
 import com.f2prateek.dart.InjectExtra;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
+import rx.Subscription;
+import rx.functions.Action1;
 
 public class GameActivity extends BaseSeeKwensActivity implements HandListener, CellListener {
 
@@ -28,8 +36,11 @@ public class GameActivity extends BaseSeeKwensActivity implements HandListener, 
 
     @InjectExtra String gameId;
 
+    @Inject GameUtil gameUtil;
+
     private HandFragment handFragment;
     private BoardFragment boardFragment;
+    private Subscription gameStateSubscription;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -100,5 +111,72 @@ public class GameActivity extends BaseSeeKwensActivity implements HandListener, 
     @Override
     public void cellSelected(int position, int playerTeam) {
         handFragment.deselectCard();
+    }
+
+    @Override
+    public void onBackPressed() {
+        final BottomSheetBehavior<View> bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        } else {
+            showExitConfirmationDialog();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        gameStateSubscription = gameUtil.getGameStateObservable(gameId)
+                .subscribe(new Action1<GameState>() {
+                    @Override
+                    public void call(GameState gameState) {
+                        if (gameState == GameState.FINISHED) {
+                            showGameOverDialog();
+                        }
+                    }
+                });
+    }
+
+    @Override
+    protected void onPause() {
+        if (gameStateSubscription != null) {
+            gameStateSubscription.unsubscribe();
+        }
+        super.onPause();
+    }
+
+    private void showGameOverDialog() {
+        final SeeKwensDialogFragment dialog = new SeeKwensDialogFragment.Builder()
+                .setTitle(getString(R.string.game_over))
+                .setMessage(getString(R.string.winning_message))
+                .setPositiveButton(getString(R.string.inspect_board), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //do nothing for now
+                    }
+                })
+                .setNegativeButton(getString(R.string.quit), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .setCancelable(false)
+                .build();
+        dialog.show(getSupportFragmentManager(), dialog.getTag());
+    }
+
+    private void showExitConfirmationDialog() {
+        final SeeKwensDialogFragment dialog = new SeeKwensDialogFragment.Builder().setMessage(getString(R.string.game_quit_confirmation))
+                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .setNegativeButton(getString(R.string.no), null)
+                .setCancelable(false)
+                .build();
+        dialog.show(getSupportFragmentManager(), dialog.getTag());
     }
 }

@@ -66,6 +66,10 @@ public class BoardAdapter extends RecyclerView.Adapter<BoardCellViewHolder> impl
         this.playerTeam = playerTeam;
     }
 
+    public List<Long> getChips() {
+        return chips;
+    }
+
     interface CellSelectListener {
         void cellClicked(int position);
     }

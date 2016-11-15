@@ -14,10 +14,12 @@ import javax.inject.Singleton;
 @Singleton
 public class Rules {
 
+    private static final int BOARD_WH = 10;
     private static int BOARD_SIZE = 100;
 
     private static final Set<String> oneEyedJacks = new HashSet<>(Arrays.asList(new String[] {Cards.HJ, Cards.SJ}));
     private static final Set<String> twoEyedJacks = new HashSet<>(Arrays.asList(new String[] {Cards.DJ, Cards.CJ}));
+    private static final Set<Integer> wildCards = new HashSet<>(Arrays.asList(new Integer[]{0, 9, 90, 99}));
 
     public static final String[] board = {
             "XX","6D","7D","8D","9D","0D","QD","KD","AD","XX",
@@ -44,7 +46,7 @@ public class Rules {
             case 8:
             case 9:
                 return 4;
-            case 10:
+            case BOARD_WH:
             case 12:
                 return 3;
             default:
@@ -82,5 +84,60 @@ public class Rules {
 
     public boolean shouldRemoveCoin(String cardCode) {
         return oneEyedJacks.contains(cardCode);
+    }
+
+    public String[][] transform2D(List<Long> chips, long playerTeam) {
+        final String[][] chips2D = new String[BOARD_WH][BOARD_WH];
+        for (int i = 0; i < chips.size(); i++) {
+            final int x = i % BOARD_WH;
+            final int y = i / BOARD_WH;
+            final String chip = chips.get(i) == -1 ? "X" : String.valueOf(chips.get(i));
+            chips2D[y][x] = wildCards.contains(i) ? String.valueOf(playerTeam) : chip;
+        }
+        return chips2D;
+    }
+
+    public String horizontalString(String[][] chips) {
+        final StringBuilder horizontal = new StringBuilder();
+        for (int i = 0; i < BOARD_WH; i++) {
+            for (int j = 0; j < BOARD_WH; j++) {
+                horizontal.append(chips[i][j]);
+            }
+            horizontal.append("X");
+        }
+        return horizontal.toString();
+    }
+
+    public String verticalString(String[][] chips) {
+        final StringBuilder vertical = new StringBuilder();
+        for (int i = 0; i < BOARD_WH; i++) {
+            for (int j = 0; j < BOARD_WH; j++) {
+                vertical.append(chips[j][i]);
+            }
+            vertical.append("X");
+        }
+        return vertical.toString();
+    }
+
+    public String backSlashString(String[][] chips) {
+        final StringBuilder backSlash = new StringBuilder();
+        for (int i = 0; i < 2* BOARD_WH -1; i++) {
+            for (int j = Math.max(0, i- BOARD_WH +1); j <= Math.min(i, BOARD_WH -1); j++) {
+                backSlash.append(chips[j][i-j]);
+            }
+            backSlash.append("X");
+        }
+        return backSlash.toString();
+    }
+
+    public String forwardSlashString(String[][] chips) {
+        final StringBuilder forwardSlash = new StringBuilder();
+        for (int i = 0; i < 2* BOARD_WH -1; i++) {
+            for (int j = Math.max(0, i- BOARD_WH +1); j <= Math.min(i, BOARD_WH -1); j++) {
+                forwardSlash.append(chips[BOARD_WH -1+j-i][j]);
+            }
+            forwardSlash.append("X");
+        }
+        return forwardSlash.toString();
     }
 }
