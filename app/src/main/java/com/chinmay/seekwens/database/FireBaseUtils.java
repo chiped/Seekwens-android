@@ -217,6 +217,12 @@ public class FireBaseUtils {
                 GameState.class);
     }
 
+    public Observable<LastMove> getLastMoveObservable(String gameId) {
+        return RxFirebase.create(
+                FirebaseDatabase.getInstance().getReference(gameId).child(LAST_MOVE_KEY),
+                LastMove.class);
+    }
+
     private static final class FirebaseGameJoinerSubscriber implements Observable.OnSubscribe<Game> {
 
         private final String playerName;

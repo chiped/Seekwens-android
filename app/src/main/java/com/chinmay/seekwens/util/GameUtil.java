@@ -174,4 +174,8 @@ public class GameUtil {
     public Observable<GameState> getGameStateObservable(String gameId) {
         return fireBaseUtils.getGameStateObservable(gameId);
     }
+
+    public Observable<LastMove> getLastMoveObservable(String gameId) {
+        return fireBaseUtils.getLastMoveObservable(gameId);
+    }
 }

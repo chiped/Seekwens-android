@@ -1,10 +1,7 @@
 package com.chinmay.seekwens.game.board;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
@@ -12,7 +9,6 @@ import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.game.hand.HandListener;
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.Game;
-import com.chinmay.seekwens.model.GameState;
 import com.chinmay.seekwens.model.LastMove;
 import com.chinmay.seekwens.model.Player;
 import com.chinmay.seekwens.ui.BaseSeeKwensFragment;
@@ -51,6 +47,7 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
     private CellListener cellListener;
     private Card selectedHandCard;
     private int totalTeams;
+    private Subscription lastMoveSubscription;
 
     @Override
     protected int getLayoutId() {
@@ -107,12 +104,25 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
                         boardAdapter.notifyDataSetChanged();
                     }
                 });
+        lastMoveSubscription = gameUtil.getLastMoveObservable(gameId)
+                .subscribe(new Action1<LastMove>() {
+                    @Override
+                    public void call(LastMove lastMove) {
+                        if (lastMove == null) {
+                            return;
+                        }
+                        boardRecycler.smoothScrollToPosition(lastMove.tile);
+                    }
+                });
     }
 
     @Override
     public void onPause() {
         if (boardSubscription != null) {
             boardSubscription.unsubscribe();
+        }
+        if (lastMoveSubscription != null) {
+            lastMoveSubscription.unsubscribe();
         }
         super.onPause();
     }
