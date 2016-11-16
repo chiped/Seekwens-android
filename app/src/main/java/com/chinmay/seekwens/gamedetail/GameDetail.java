@@ -45,6 +45,7 @@ public class GameDetail extends BaseSeeKwensActivity {
 
     private GameDetailAdapter gameDetailAdapter;
     private Subscription gameValidatorSubscription;
+    private Subscription gameStateSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +74,27 @@ public class GameDetail extends BaseSeeKwensActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        gameStateSubscription = gameUtil.getGameStateObservable(gameId)
+                .subscribe(new Action1<GameState>() {
+                    @Override
+                    public void call(GameState gameState) {
+                        if (gameState == GameState.STARTED) {
+                            moveToGameActivity();
+                        }
+                    }
+                });
+    }
+
+    @Override
     protected void onPause() {
-        gameValidatorSubscription.unsubscribe();
+        if (gameValidatorSubscription != null) {
+            gameValidatorSubscription.unsubscribe();
+        }
+        if (gameStateSubscription != null) {
+            gameStateSubscription.unsubscribe();
+        }
         super.onPause();
     }
 
@@ -161,14 +181,19 @@ public class GameDetail extends BaseSeeKwensActivity {
         }
     }
 
+    private void moveToGameActivity() {
+        final Intent intent = Henson.with(GameDetail.this)
+                .gotoGameActivity()
+                .gameId(gameId)
+                .build();
+        startActivity(intent);
+        finish();
+    }
+
     private class GameAction implements Action0 {
         @Override
         public void call() {
-                final Intent intent = Henson.with(GameDetail.this)
-                        .gotoGameActivity()
-                        .gameId(gameId)
-                        .build();
-                startActivity(intent);
+            moveToGameActivity();
         }
     }
 }
