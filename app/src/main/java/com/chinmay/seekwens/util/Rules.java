@@ -5,8 +5,10 @@ import com.chinmay.seekwens.model.Card;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Singleton;
@@ -20,6 +22,28 @@ public class Rules {
     private static final Set<String> oneEyedJacks = new HashSet<>(Arrays.asList(new String[] {Cards.HJ, Cards.SJ}));
     private static final Set<String> twoEyedJacks = new HashSet<>(Arrays.asList(new String[] {Cards.DJ, Cards.CJ}));
     private static final Set<Integer> wildCards = new HashSet<>(Arrays.asList(new Integer[]{0, 9, 90, 99}));
+
+    private static final Map<Character, String> numberMap = new HashMap<Character, String>() {{
+        put('A', "Ace");
+        put('2', "Two");
+        put('3', "Three");
+        put('4', "Four");
+        put('5', "Five");
+        put('6', "Six");
+        put('7', "Seven");
+        put('8', "Eight");
+        put('9', "Nine");
+        put('0', "Ten");
+        put('K', "King");
+        put('Q', "Queen");
+    }};
+
+    private Map<Character, String> suitMap = new HashMap<Character, String>(){{
+        put('S', "Spades");
+        put('C', "Clubs");
+        put('H', "Hearts");
+        put('D', "Diamonds");
+    }};
 
     public static final String[] board = {
             "XX","6D","7D","8D","9D","0D","QD","KD","AD","XX",
@@ -139,5 +163,21 @@ public class Rules {
             forwardSlash.append("X");
         }
         return forwardSlash.toString();
+    }
+
+    public String cardName(String cardCode, int tile) {
+        if (oneEyedJacks.contains(cardCode)) {
+            return String.format("one eyed jack at %s", cardName(board[tile]));
+        } else if (twoEyedJacks.contains(cardCode)) {
+            return String.format("two eyed jack at %s", cardName(board[tile]));
+        } else {
+            return cardName(cardCode);
+        }
+    }
+
+    private String cardName(String cardCode) {
+        final String number = numberMap.get(cardCode.charAt(0));
+        final String suit = suitMap.get(cardCode.charAt(1));
+        return String.format("%s of %s", number, suit);
     }
 }

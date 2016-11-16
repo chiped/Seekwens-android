@@ -47,7 +47,7 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
     private CellListener cellListener;
     private Card selectedHandCard;
     private int totalTeams;
-    private Subscription lastMoveSubscription;
+    private Game game;
 
     @Override
     protected int getLayoutId() {
@@ -61,14 +61,20 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
 
         gameUtil.gameReadObservable(gameId)
                 .subscribeOn(Schedulers.io())
-                .flatMap(new Func1<Game, Observable<Player>>() {
+                .doOnNext(new Action1<Game>() {
                     @Override
-                    public Observable<Player> call(Game game) {
+                    public void call(Game game) {
+                        BoardFragment.this.game = game;
                         final Set<Integer> teams = new HashSet<>();
                         for (Player player : game.players.values()) {
                             teams.add(player.team);
                         }
                         totalTeams = teams.size();
+                    }
+                })
+                .flatMap(new Func1<Game, Observable<Player>>() {
+                    @Override
+                    public Observable<Player> call(Game game) {
                         return Observable.from(game.players.values());
                     }
                 })
@@ -104,25 +110,12 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
                         boardAdapter.notifyDataSetChanged();
                     }
                 });
-        lastMoveSubscription = gameUtil.getLastMoveObservable(gameId)
-                .subscribe(new Action1<LastMove>() {
-                    @Override
-                    public void call(LastMove lastMove) {
-                        if (lastMove == null) {
-                            return;
-                        }
-                        boardRecycler.smoothScrollToPosition(lastMove.tile);
-                    }
-                });
     }
 
     @Override
     public void onPause() {
         if (boardSubscription != null) {
             boardSubscription.unsubscribe();
-        }
-        if (lastMoveSubscription != null) {
-            lastMoveSubscription.unsubscribe();
         }
         super.onPause();
     }
@@ -142,7 +135,7 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
         //TODO possibly move this to GameActivity and enable send button
         final LastMove lastMove = new LastMove();
         lastMove.card = selectedHandCard.code;
-        lastMove.player = playerId;
+        lastMove.player = game.players.get(playerId).name;
         lastMove.team = playerTeam;
         lastMove.tile = position;
         final boolean didRemove = gameUtil.playMove(gameId, lastMove);
@@ -150,5 +143,11 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
             cellListener.cellSelected(position, playerTeam);
         }
         gameUtil.checkWinner(gameId, boardAdapter.getChips(), playerTeam, position, didRemove, totalTeams);
+    }
+
+    public void lastMovePlayed(int tile) {
+        if (boardRecycler != null) {
+            boardRecycler.smoothScrollToPosition(tile);
+        }
     }
 }

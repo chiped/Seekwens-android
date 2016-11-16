@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,6 +20,7 @@ import com.chinmay.seekwens.game.hand.HandFragment;
 import com.chinmay.seekwens.game.hand.HandListener;
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.model.GameState;
+import com.chinmay.seekwens.model.LastMove;
 import com.chinmay.seekwens.ui.BaseSeeKwensActivity;
 import com.chinmay.seekwens.ui.SeeKwensDialogFragment;
 import com.chinmay.seekwens.util.GameUtil;
@@ -31,8 +34,11 @@ import rx.functions.Action1;
 
 public class GameActivity extends BaseSeeKwensActivity implements HandListener, CellListener {
 
+    private static final String GAME_ID = "gameId";
+
     @BindView(R.id.bottom_sheet_hand) View bottomSheet;
     @BindView(R.id.floating_play_button) FloatingActionButton playButton;
+    @BindView(R.id.coordinator_layout) CoordinatorLayout coordinatorLayout;
 
     @InjectExtra String gameId;
 
@@ -41,6 +47,7 @@ public class GameActivity extends BaseSeeKwensActivity implements HandListener, 
     private HandFragment handFragment;
     private BoardFragment boardFragment;
     private Subscription gameStateSubscription;
+    private Subscription lastMoveSubscription;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,7 +59,7 @@ public class GameActivity extends BaseSeeKwensActivity implements HandListener, 
     private void setUpBoard() {
         boardFragment = new BoardFragment();
         final Bundle bundle = new Bundle();
-        bundle.putString("gameId", gameId);
+        bundle.putString(GAME_ID, gameId);
         boardFragment.setArguments(bundle);
         boardFragment.setCellListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.board_content, boardFragment).commit();
@@ -61,7 +68,7 @@ public class GameActivity extends BaseSeeKwensActivity implements HandListener, 
     private void setUpHand() {
         handFragment = new HandFragment();
         final Bundle bundle = new Bundle();
-        bundle.putString("gameId", gameId);
+        bundle.putString(GAME_ID, gameId);
         handFragment.setArguments(bundle);
         handFragment.setHandListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.hand_content, handFragment).commit();
@@ -135,12 +142,41 @@ public class GameActivity extends BaseSeeKwensActivity implements HandListener, 
                         }
                     }
                 });
+        lastMoveSubscription = gameUtil.getLastMoveObservable(gameId)
+                .subscribe(new Action1<LastMove>() {
+                    @Override
+                    public void call(LastMove lastMove) {
+                        if (lastMove == null) {
+                            return;
+                        }
+                        showSnackbar(lastMove);
+                        if (boardFragment != null) {
+                            boardFragment.lastMovePlayed(lastMove.tile);
+                        }
+                    }
+                });
+    }
+
+    private void showSnackbar(LastMove lastMove) {
+        final String card = gameUtil.cardName(lastMove.card, lastMove.tile);
+        final String text = getString(R.string.last_played, lastMove.player, card);
+        final Snackbar snackbar = Snackbar.make(coordinatorLayout, text, Snackbar.LENGTH_INDEFINITE);
+        snackbar.setAction(R.string.dismiss, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Do nothing
+                    }
+                });
+        snackbar.show();
     }
 
     @Override
     protected void onPause() {
         if (gameStateSubscription != null) {
             gameStateSubscription.unsubscribe();
+        }
+        if (lastMoveSubscription != null) {
+            lastMoveSubscription.unsubscribe();
         }
         super.onPause();
     }

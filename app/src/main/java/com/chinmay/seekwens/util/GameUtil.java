@@ -178,4 +178,8 @@ public class GameUtil {
     public Observable<LastMove> getLastMoveObservable(String gameId) {
         return fireBaseUtils.getLastMoveObservable(gameId);
     }
+
+    public String cardName(String cardCode, int tile) {
+        return rules.cardName(cardCode, tile);
+    }
 }

@@ -8,16 +8,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 
-import com.chinmay.seekwens.R;
 import com.f2prateek.dart.Dart;
 import com.f2prateek.dart.InjectExtra;
 
-import butterknife.BindColor;
-import butterknife.ButterKnife;
-
 public class SeeKwensDialogFragment extends DialogFragment {
-
-    @BindColor(R.color.colorPrimary) int buttonColor;
 
     @InjectExtra @Nullable String title;
     @InjectExtra @Nullable String message;
@@ -40,8 +34,6 @@ public class SeeKwensDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        ButterKnife.bind(this, getActivity());
-
         final Bundle arguments = getArguments();
         if (arguments != null) {
             Dart.inject(this, arguments);
@@ -60,16 +52,7 @@ public class SeeKwensDialogFragment extends DialogFragment {
             builder.setNegativeButton(negativeButton, negativeButtonListener);
         }
         setCancelable(cancelable);
-        final AlertDialog alertDialog = builder.create();
-        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
-                ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(buttonColor);
-                ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(buttonColor);
-
-            }
-        });
-        return alertDialog;
+        return builder.create();
     }
 
     public static class Builder {
