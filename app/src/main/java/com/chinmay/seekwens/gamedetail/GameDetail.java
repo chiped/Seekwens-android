@@ -174,7 +174,12 @@ public class GameDetail extends BaseSeeKwensActivity {
                                 }
                             })
                             .observeOn(AndroidSchedulers.mainThread())
-                            .doAfterTerminate(new GameAction())
+                            .doAfterTerminate(new Action0() {
+                                @Override
+                                public void call() {
+                                    moveToGameActivity();
+                                }
+                            })
                             .subscribe();
                 }
             });
@@ -188,12 +193,5 @@ public class GameDetail extends BaseSeeKwensActivity {
                 .build();
         startActivity(intent);
         finish();
-    }
-
-    private class GameAction implements Action0 {
-        @Override
-        public void call() {
-            moveToGameActivity();
-        }
     }
 }
