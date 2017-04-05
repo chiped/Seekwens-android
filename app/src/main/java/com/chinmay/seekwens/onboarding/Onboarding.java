@@ -101,6 +101,7 @@ public class Onboarding extends BaseSeeKwensActivity {
     private void moveToGame(String gameId) {
         final Intent intent = Henson.with(this).gotoGameActivity().gameId(gameId).build();
         startActivity(intent);
+        finish();
     }
 
     @OnClick(R.id.button_new_game)
