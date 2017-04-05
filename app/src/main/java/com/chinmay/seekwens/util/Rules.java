@@ -70,7 +70,7 @@ public class Rules {
             case 8:
             case 9:
                 return 4;
-            case BOARD_WH:
+            case 10:
             case 12:
                 return 3;
             default:
