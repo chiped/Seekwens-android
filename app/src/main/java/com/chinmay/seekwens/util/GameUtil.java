@@ -86,7 +86,7 @@ public class GameUtil {
         fireBaseUtils.setGameState(gameId, gameState);
     }
 
-    public String[] getBoard() {
+    public List<String> getBoard() {
         return rules.board;
     }
 
@@ -180,6 +180,10 @@ public class GameUtil {
     }
 
     public String cardName(String cardCode, int tile) {
-        return rules.cardName(cardCode, tile);
+        return rules.displayCardName(cardCode, tile);
+    }
+
+    public List<Integer> getPlayablePositions(Card card, int playerTeam, List<Long> chips) {
+        return rules.getPlayablePositions(card, playerTeam, chips);
     }
 }

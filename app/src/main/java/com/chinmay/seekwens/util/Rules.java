@@ -1,5 +1,7 @@
 package com.chinmay.seekwens.util;
 
+import android.support.annotation.NonNull;
+
 import com.chinmay.seekwens.cards.Cards;
 import com.chinmay.seekwens.model.Card;
 
@@ -45,7 +47,7 @@ public class Rules {
         put('D', "Diamonds");
     }};
 
-    public static final String[] board = {
+    public static final List<String> board = Arrays.asList(
             "XX","6D","7D","8D","9D","0D","QD","KD","AD","XX",
             "5D","3H","2H","2S","3S","4S","5S","6S","7S","AC",
             "4D","4H","KD","AD","AC","KC","QC","0C","8S","KC",
@@ -56,7 +58,7 @@ public class Rules {
             "QS","9H","7D","6D","5D","4D","3D","2D","AS","7C",
             "0S","0H","QH","KH","AH","2C","3C","4C","5C","6C",
             "XX","9S","8S","7S","6S","5S","4S","3S","2S","XX"
-    };
+    );
 
     public int cardsPerPlayer(int totalPlayers) {
         switch (totalPlayers) {
@@ -100,7 +102,7 @@ public class Rules {
         }
 
         if (twoEyedJacks.contains(selectedCard.code)) {
-            return teamCode == -1;
+            return teamCode == -1 && !cardCode.equals(Cards.XX);
         }
 
         return selectedCard.code.equals(cardCode) && teamCode == -1;
@@ -165,11 +167,11 @@ public class Rules {
         return forwardSlash.toString();
     }
 
-    public String cardName(String cardCode, int tile) {
+    public String displayCardName(String cardCode, int tile) {
         if (oneEyedJacks.contains(cardCode)) {
-            return String.format("one eyed jack at %s", cardName(board[tile]));
+            return String.format("one eyed jack at %s", cardName(board.get(tile)));
         } else if (twoEyedJacks.contains(cardCode)) {
-            return String.format("two eyed jack at %s", cardName(board[tile]));
+            return String.format("two eyed jack at %s", cardName(board.get(tile)));
         } else {
             return cardName(cardCode);
         }
@@ -179,5 +181,50 @@ public class Rules {
         final String number = numberMap.get(cardCode.charAt(0));
         final String suit = suitMap.get(cardCode.charAt(1));
         return String.format("%s of %s", number, suit);
+    }
+
+    public List<Integer> getPlayablePositions(Card card, int playerTeam, List<Long> chips) {
+        if (oneEyedJacks.contains(card.code)) {
+            return oneEyedJackPlayablePositions(playerTeam, chips);
+        } else if (twoEyedJacks.contains(card.code)) {
+            return twoEyedJackPlayablePositions(chips);
+        } else {
+            return nonJackCardPlayablePositions(card);
+        }
+    }
+
+    @NonNull
+    private List<Integer> nonJackCardPlayablePositions(Card card) {
+        List<Integer> indexList = new ArrayList<>();
+        for (int i = 0; i < board.size(); i++) {
+            if (board.get(i).equals(card.code)) {
+                indexList.add(i);
+            }
+        }
+        return indexList;
+    }
+
+    @NonNull
+    private List<Integer> twoEyedJackPlayablePositions(List<Long> chips) {
+        List<Integer> indexList = new ArrayList<>();
+        for (int i = 0; i < chips.size(); i++) {
+            final long tileChip = chips.get(i);
+            if (tileChip == -1 && !wildCards.contains(i)) {
+                indexList.add(i);
+            }
+        }
+        return indexList;
+    }
+
+    @NonNull
+    private List<Integer> oneEyedJackPlayablePositions(int playerTeam, List<Long> chips) {
+        List<Integer> indexList = new ArrayList<>();
+        for (int i = 0; i < chips.size(); i++) {
+            final long tileChip = chips.get(i);
+            if (tileChip != -1 && tileChip != playerTeam) {
+                indexList.add(i);
+            }
+        }
+        return indexList;
     }
 }

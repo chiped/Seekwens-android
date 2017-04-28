@@ -1,8 +1,15 @@
 package com.chinmay.seekwens.game.board;
 
+import android.animation.Animator;
+import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import com.chinmay.seekwens.R;
@@ -35,6 +42,7 @@ import static com.chinmay.seekwens.SeeKwensApplication.USER_ID_KEY;
 public class BoardFragment extends BaseSeeKwensFragment implements HandListener, BoardAdapter.CellSelectListener {
 
     @BindView(R.id.board_recycler) RecyclerView boardRecycler;
+    @BindView(R.id.board_container) View boardContainer;
 
     @InjectExtra String gameId;
 
@@ -48,6 +56,9 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
     private Card selectedHandCard;
     private int totalTeams;
     private Game game;
+    private ScaleGestureDetector scaleGestureDetector;
+    private GestureDetector panGestureDetector;
+    private float recyclerScale = 1;
 
     @Override
     protected int getLayoutId() {
@@ -93,10 +104,72 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
                 });
 
         boardAdapter = new BoardAdapter(gameUtil.getBoard(), this);
-        final BoardLayoutManager layout = new BoardLayoutManager();
-        layout.setTotalColumnCount(10);
-        boardRecycler.setLayoutManager(layout);
+//        final BoardLayoutManager layout = new BoardLayoutManager();
+//        layout.setTotalColumnCount(10);
+        boardRecycler.setLayoutManager(new GridLayoutManager(getContext(), 10));
         boardRecycler.setAdapter(boardAdapter);
+
+        boardRecycler.setOnTouchListener(new MyOnTouchListener());
+        final ScaleGestureDetector.SimpleOnScaleGestureListener listener = new MySimpleOnScaleGestureListener();
+        scaleGestureDetector = new ScaleGestureDetector(getContext(), listener);
+        panGestureDetector = new GestureDetector(getContext(), new GestureDetector.OnGestureListener() {
+            @Override
+            public boolean onDown(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public void onShowPress(MotionEvent e) {
+
+            }
+
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                float translateX = 0;
+                float translateY = 0;
+                int[] l = new int[2];
+                final Rect boardViewBounds = new Rect();
+                boardRecycler.getLocalVisibleRect(boardViewBounds);
+//                final Rect boardViewBounds = new Rect(l[0], l[1],
+//                        l[0] + (int) (boardRecycler.getWidth() * boardRecycler.getScaleX()),
+//                        l[1] + (int) (boardRecycler.getHeight() * boardRecycler.getScaleY()));
+                if (Math.abs(distanceX) > 50) {
+                    if (boardViewBounds.left - distanceX > 0) {
+                        translateX = boardViewBounds.left;
+                    } else if (boardViewBounds.right - distanceX < boardContainer.getRight()) {
+                        translateX = -(boardViewBounds.right - boardContainer.getRight());
+                    } else {
+                        translateX = -distanceX;
+                    }
+                }
+//                if (Math.abs(distanceY) > 50
+//                        && boardViewBounds.top - distanceY <= 0
+//                        && boardViewBounds.bottom - distanceY >= boardContainer.getBottom()) {
+//                    translateY = -distanceY;
+//                }
+                if (translateX != 0 || translateY != 0) {
+                    boardRecycler.animate().translationXBy(translateX).translationYBy(translateY).setDuration(0).start();
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            public void onLongPress(MotionEvent e) {
+
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                return false;
+            }
+        });
     }
 
     @Override
@@ -127,7 +200,7 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
     @Override
     public void cardSelected(Card card) {
         this.selectedHandCard = card;
-        boardAdapter.highlightCard(card);
+        boardAdapter.highlightCards(card, gameUtil.getPlayablePositions(card, playerTeam, boardAdapter.getChips()));
     }
 
     @Override
@@ -148,6 +221,66 @@ public class BoardFragment extends BaseSeeKwensFragment implements HandListener,
     public void lastMovePlayed(int tile) {
         if (boardRecycler != null) {
             boardRecycler.smoothScrollToPosition(tile);
+        }
+    }
+
+    private class MyOnTouchListener implements View.OnTouchListener {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            scaleGestureDetector.onTouchEvent(event);
+            panGestureDetector.onTouchEvent(event);
+            return false;
+        }
+    }
+
+    private class MySimpleOnScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+
+        private static final int SPAN_SLOP = 7;
+
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            if (gestureTolerance(detector)) {
+                recyclerScale *= detector.getScaleFactor();
+                recyclerScale = Math.max(1f, Math.min(recyclerScale, 2.0f));
+                boardRecycler.animate().scaleX(recyclerScale).scaleY(recyclerScale).setDuration(0)
+                        .setListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                boardRecycler.animate().setListener(null);
+                                final Rect boardViewBounds = new Rect();
+                                boardRecycler.getLocalVisibleRect(boardViewBounds);
+                                if (boardViewBounds.left > 0) {
+                                    boardRecycler.animate().translationXBy(-boardViewBounds.left).setDuration(100).start();
+                                }
+                                if (boardViewBounds.right < boardContainer.getRight()) {
+                                    boardRecycler.animate().translationXBy(boardContainer.getRight() - boardViewBounds.right).setDuration(100).start();
+                                }
+                            }
+
+                            @Override
+                            public void onAnimationCancel(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animator animation) {
+
+                            }
+                        }).start();
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        private boolean gestureTolerance(ScaleGestureDetector detector) {
+            final float spanDelta = Math.abs(detector.getCurrentSpan() - detector.getPreviousSpan());
+            return spanDelta > SPAN_SLOP;
         }
     }
 }

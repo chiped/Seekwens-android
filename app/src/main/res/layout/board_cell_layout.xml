@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="@dimen/board_cell_width"
-             android:layout_height="@dimen/board_cell_height"
-             android:padding="@dimen/padding4">
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_margin="@dimen/padding2">
 
     <ImageView
         android:id="@+id/image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:adjustViewBounds="true"
         android:src="@drawable/ic_card_back"/>
 
     <ImageView
@@ -18,12 +19,14 @@
         android:layout_gravity="center"
         android:src="@drawable/ic_chip"
         android:visibility="gone"
+        android:adjustViewBounds="true"
+        android:layout_margin="@dimen/padding4"
         tools:visibility="visible"/>
 
     <View
         android:id="@+id/overlay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:background="@color/card_selected"
         android:visibility="gone"/>
 </FrameLayout>

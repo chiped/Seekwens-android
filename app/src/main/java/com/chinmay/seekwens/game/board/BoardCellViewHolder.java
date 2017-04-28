@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.chinmay.seekwens.R;
 import com.chinmay.seekwens.model.Card;
 import com.chinmay.seekwens.util.Rules;
@@ -45,6 +46,9 @@ public class BoardCellViewHolder extends RecyclerView.ViewHolder {
         final String url = String.format(IMAGE_URL, cardCode);
         Glide.with(imageView.getContext())
                 .load(url)
+                .thumbnail(0.1f)
+                .skipMemoryCache(true)
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .placeholder(R.drawable.ic_card_back)
                 .fallback(R.drawable.ic_card_back)
                 .into(imageView);

@@ -56,4 +56,6 @@ public class Cards {
     public static final String DJ = "JD";
     public static final String DQ = "QD";
     public static final String DK = "KD";
+
+    public static final String XX = "XX";
 }
